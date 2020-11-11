@@ -11,14 +11,14 @@ class Categoria(models.Model):
     nome = models.CharField(max_length=20)
 
 class Movimentacao(models.Model):
-    data = models.DateField()
+    
     valor_esperado = models.DecimalField(max_digits=6 ,decimal_places=2)
     data_geracao = models.DateField()
     data_lancamento = models.DateField()
     valor_pago = models.DecimalField(max_digits=9 ,decimal_places=2)
     usuario = models.ForeignKey(User, on_delete=models.CASCADE)
     categoria = models.ForeignKey(Categoria, on_delete=models.CASCADE)
-    
+    descricao= models.CharField(max_length=40)
 class PadraoMovimentacao(models.Model):
     receita_despesa = models.BooleanField()
     descricao = models.TextField()
