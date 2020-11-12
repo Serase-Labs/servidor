@@ -15,7 +15,9 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
+from serase_app.views import PadroesView
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path('padroes/', PadroesView.as_view(), name='padroes')
 ]
