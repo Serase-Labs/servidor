@@ -14,7 +14,8 @@ class Categoria(models.Model):
         return self.nome
 
 class PadraoMovimentacao(models.Model):
-    receita_despesa = models.BooleanField()
+    tipo_movimentacao =(("Receita","Receita"),("Despesa","Despesa"))
+    receita_despesa = models.CharField(max_length=7, choices= tipo_movimentacao)
     descricao = models.TextField(null=True,blank= True)
     periodo = models.IntegerField()
     valor = models.DecimalField(max_digits=6 ,decimal_places=2, null = True, blank= True)
