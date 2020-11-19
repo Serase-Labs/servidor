@@ -11,7 +11,7 @@ from .padroes_resposta import RespostaLista, RespostaStatus
 class PadroesView(View):
 
     def get(self, request):
-        ESCOLHAS_TIPO = ["R", "D"]
+        VALORES_VALIDOS_TIPO = ["receita", "despesa"]
 
         # Usuario padrão temporário (até implementado o login)
         usuario = User.objects.get(username="jv_eumsmo")
@@ -23,7 +23,7 @@ class PadroesView(View):
         if "tipo" in request.GET:
             tipo = request.GET["tipo"]
 
-            if tipo not in ESCOLHAS_TIPO:
+            if tipo not in VALORES_VALIDOS_TIPO:
                 return RespostaStatus(500, "Tipo inválido!")
 
             query = query.filter(receita_despesa=tipo)
