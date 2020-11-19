@@ -14,7 +14,7 @@ class Categoria(models.Model):
         return self.nome
 
 class PadraoMovimentacao(models.Model):
-    TIPO_MOVIMENTACAO = (("Receita","Receita"),("Despesa","Despesa"))
+    TIPO_MOVIMENTACAO = (("receita","receita"),("despesa","despesa"))
     
     receita_despesa = models.CharField(max_length=7, choices=TIPO_MOVIMENTACAO)
     descricao = models.TextField(null=True, blank=True)
