@@ -3,7 +3,7 @@ from django.contrib.auth.models import User
 
 # Create your models here.
 class Saldo(models.Model):
-    usuario = models.ForeignKey(User, on_delete=models.CASCADE)
+    cod_usuario = models.ForeignKey(User, on_delete=models.CASCADE)
     mes_ano = models.DateField()
     saldo = models.DecimalField(max_digits=10 ,decimal_places=2)
 
@@ -22,8 +22,8 @@ class PadraoMovimentacao(models.Model):
     dia_cobranca = models.IntegerField()
     data_inicio = models.DateField(null=True,blank= True)
     data_fim = models.DateField(null=True, blank= True)
-    usuario = models.ForeignKey(User, on_delete=models.CASCADE)
-    categoria = models.ForeignKey(Categoria, on_delete=models.CASCADE)
+    cod_usuario = models.ForeignKey(User, on_delete=models.CASCADE)
+    cod_categoria = models.ForeignKey(Categoria, on_delete=models.CASCADE)
     def __str__(self):
         return self.descricao 
 
@@ -33,10 +33,10 @@ class Movimentacao(models.Model):
     data_geracao = models.DateField(null=True,blank= True)
     data_lancamento = models.DateField(null=True,blank= True)
     valor_pago = models.DecimalField(max_digits=9 ,decimal_places=2,null=True,blank= True)
-    usuario = models.ForeignKey(User, on_delete=models.CASCADE)
-    categoria = models.ForeignKey(Categoria, on_delete=models.CASCADE)
+    cod_usuario = models.ForeignKey(User, on_delete=models.CASCADE)
+    cod_categoria = models.ForeignKey(Categoria, on_delete=models.CASCADE)
     descricao= models.CharField(max_length=40, null=True,blank= True)
-    cod_PadraoMovimentacao = models.ForeignKey(PadraoMovimentacao, on_delete= models.CASCADE,blank=True , null=True)
+    cod_padrao = models.ForeignKey(PadraoMovimentacao, on_delete= models.CASCADE,blank=True , null=True)
     def __str__(self):
         return   self.descricao 
 
