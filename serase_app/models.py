@@ -10,9 +10,6 @@ class Saldo(models.Model):
 class Categoria(models.Model):
     nome = models.CharField(max_length=20)
 
-    valor_esperado = models.DecimalField(max_digits=6 ,decimal_places=2)
-    def __str__(self):
-        return self.nome
 
 class PadraoMovimentacao(models.Model):
     receita_despesa = models.BooleanField()

@@ -5,7 +5,8 @@ from django.http import JsonResponse
 from django.db.models import F, Case, When, CharField, Value
 from django.contrib.auth.models import User
 from .models import PadraoMovimentacao
-from .padroes_resposta import RespostaLista, RespostaStatus
+from .models import Movimentacao
+from .padroes_resposta import RespostaLista, RespostaStatus,RespostaConteudo
 
 
 class PadroesView(View):
@@ -42,3 +43,21 @@ class PadroesView(View):
         lista = list(lista)
 
         return RespostaLista(200, lista)
+
+
+
+class InfoMovimentacao(View):
+
+    def get(self, request, id):
+        #Juan é o usuario padrão no momento        
+        usuario = User.objects.get(username="jv_eumsmo") 
+
+        #Não tenho muita certeza do que eu estou fazendo
+        info = Movimentacao.objects.filter(id=id)
+
+        info_mov = info.values("cod_PadraoMovimentacao","valor_esperado","data_geracao","data_lancamento","valor_pago","descricao",categoria_nome=F("categoria__nome"))       
+        info_mov = list(info_mov)
+
+        return RespostaConteudo(200, info_mov)
+
+        #Só tá funcionando pro usuário do momento, que é o Juan
