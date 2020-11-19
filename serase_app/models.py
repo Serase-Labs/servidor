@@ -14,7 +14,7 @@ class Categoria(models.Model):
         return self.nome
 
 class PadraoMovimentacao(models.Model):
-    TIPO_MOVIMENTACAO = (("Receita","Receita"),("Despesa","Despesa"))
+    TIPO_MOVIMENTACAO = (("receita","receita"),("despesa","despesa"))
     
     receita_despesa = models.CharField(max_length=7, choices=TIPO_MOVIMENTACAO)
     descricao = models.TextField(null=True, blank=True)
@@ -25,6 +25,7 @@ class PadraoMovimentacao(models.Model):
     data_fim = models.DateField(null=True, blank=True)
     cod_usuario = models.ForeignKey(User, on_delete=models.CASCADE)
     cod_categoria = models.ForeignKey(Categoria, on_delete=models.CASCADE)
+
     def __str__(self):
         return self.descricao 
 
@@ -37,6 +38,7 @@ class Movimentacao(models.Model):
     cod_usuario = models.ForeignKey(User, on_delete=models.CASCADE)
     cod_categoria = models.ForeignKey(Categoria, on_delete=models.CASCADE)
     cod_padrao = models.ForeignKey(PadraoMovimentacao, on_delete=models.CASCADE, blank=True, null=True)
+
     def __str__(self):
         return self.descricao 
 

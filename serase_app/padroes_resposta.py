@@ -3,7 +3,7 @@ from django.http import JsonResponse
 # Padrões de Respostas
 
 def Resposta(status, conteudo):
-    return JsonResponse(conteudo, status=status)
+    return JsonResponse(conteudo, status=status, json_dumps_params={'indent': 2, 'ensure_ascii':False})
 
 def RespostaStatus(status,mensagem:str):
     return Resposta(status, {"status": status, "mensagem": mensagem})
