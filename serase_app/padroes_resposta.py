@@ -24,3 +24,24 @@ def RespostaPaginacao(status, conteudo, limite, total=None, offset=0, proxima=No
 
 def RespostaNotFound():
     return RespostaStatus(404, "Página não encontrada!")
+
+def RespostaAtributoInvalido(atributo, valor=None, escolhas=None):
+    mensagem = f"Atributo '{atributo}' não aceita o valor "
+    
+    if valor:
+        mensagem += f"'{valor}'"
+    else:
+        mensagem += "inserido" 
+    
+    if escolhas:
+        mensagem += ". Os valores aceitos são: "
+        mensagem += ", ".join(escolhas)
+        mensagem += "."
+    else:
+        mensagem += "!"
+
+    
+    return RespostaStatus(500, mensagem)
+    
+def RespostaFormatoDataInvalido():
+    return RespostaStatus(500, "Formato incorreto para data, o formato esperado é YYYY-MM-DD")

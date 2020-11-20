@@ -4,13 +4,12 @@ from django.http import JsonResponse
 
 from django.db.models import F
 from django.contrib.auth.models import User
-from .models import PadraoMovimentacao
-from .models import Movimentacao
-from .padroes_resposta import RespostaLista, RespostaStatus,RespostaConteudo
+from .models import *
+from .padroes_resposta import *
+from .utils import *
 
 
 class PadroesView(View):
-
     def get(self, request):
         VALORES_VALIDOS_TIPO = ["receita", "despesa"]
 
@@ -25,7 +24,7 @@ class PadroesView(View):
             tipo = request.GET["tipo"]
 
             if tipo not in VALORES_VALIDOS_TIPO:
-                return RespostaStatus(500, "Tipo inválido!")
+                return RespostaAtributoInvalido("tipo", tipo, VALORES_VALIDOS_TIPO)
 
             query = query.filter(receita_despesa=tipo)
 
@@ -36,10 +35,7 @@ class PadroesView(View):
 
         return RespostaLista(200, lista)
 
-
-
 class InfoMovimentacao(View):
-
     def get(self, request, id):
         #Juan é o usuario padrão no momento        
         usuario = User.objects.get(username="jv_eumsmo") 
@@ -53,3 +49,61 @@ class InfoMovimentacao(View):
         return RespostaConteudo(200, info_mov)
 
         #Só tá funcionando pro usuário do momento, que é o Juan
+
+
+
+
+class MovimentacaoSimplesView(View):
+    def get(self, request):
+        # Usuario padrão temporário (até implementado o login)
+        usuario = User.objects.get(username="jv_eumsmo")
+
+        # Filtragem dos padrões do usuário atual
+        query = Movimentacao.objects.filter(cod_usuario=usuario)
+
+        # Filtragem para movimentação não pendentes
+        query = query.filter(valor_pago__isnull=False)
+
+        # Filtragem por tipo
+        if "tipo" in request.GET:
+            tipo = request.GET["tipo"]
+
+            if tipo == "receita":
+                query = query.filter(valor_pago__gte=0) # Valor positivo
+            elif tipo == "despesa":
+                query = query.filter(valor_pago__lt=0)  # Valor negativo
+            else:
+                return RespostaAtributoInvalido("tipo", tipo, ["receita", "despesa"])
+
+        # Filtragem por categoria
+        if "categoria" in request.GET:
+            nome_categoria = request.GET["categoria"]
+            query = query.filter(cod_categoria__nome=nome_categoria)
+
+        # Filtragem por periodo
+        if "data_inicial" in request.GET:
+            try:
+                data_inicial = converte_data_string(request.GET["data_inicial"])
+            except:
+                return RespostaFormatoDataInvalido()
+
+            query = query.filter(data_lancamento__gte=data_inicial)
+
+        if "data_final" in request.GET:
+            try:
+                data_final = converte_data_string(request.GET["data_final"])
+            except:
+                return RespostaFormatoDataInvalido()
+
+            query = query.filter(data_lancamento__lte=data_final)
+
+        # Gera lista de valores 
+        lista = query.values("id", "descricao", "data_lancamento", "valor_pago")
+
+        #paginacao(request, lista)
+
+
+       # if is_paginacao:
+        #    return RespostaPaginacao(200, list(lista), 5)
+        #else:
+        return RespostaLista(200, list(lista))
