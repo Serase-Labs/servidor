@@ -35,6 +35,7 @@ class PadroesView(View):
 
         return RespostaLista(200, lista)
 
+
 class InfoMovimentacao(View):
     def get(self, request, id):
         #Juan é o usuario padrão no momento        
@@ -49,8 +50,6 @@ class InfoMovimentacao(View):
         return RespostaConteudo(200, info_mov)
 
         #Só tá funcionando pro usuário do momento, que é o Juan
-
-
 
 
 class MovimentacaoSimplesView(View):
@@ -107,3 +106,7 @@ class MovimentacaoSimplesView(View):
         #    return RespostaPaginacao(200, list(lista), 5)
         #else:
         return RespostaLista(200, list(lista))
+
+class StatusServidorView(View):
+    def get(self, request):
+        return RespostaStatus(200, "Requisição feita com sucesso!")
