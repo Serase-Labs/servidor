@@ -24,7 +24,7 @@ class PadroesView(View):
             tipo = request.GET["tipo"]
 
             if tipo not in VALORES_VALIDOS_TIPO:
-                return RespostaStatus(500, "Tipo inválido!")
+                return RespostaAtributoInvalido("tipo", tipo, VALORES_VALIDOS_TIPO)
 
             query = query.filter(receita_despesa=tipo)
 
