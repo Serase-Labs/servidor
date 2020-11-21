@@ -44,7 +44,7 @@ class InfoMovimentacao(View):
         #Não tenho muita certeza do que eu estou fazendo
         info = Movimentacao.objects.filter(id=id)
 
-        info_mov = info.values("cod_PadraoMovimentacao","valor_esperado","data_geracao","data_lancamento","valor_pago","descricao",categoria_nome=F("categoria__nome"))       
+        info_mov = info.values("cod_padrao","valor_esperado","valor_pago","data_geracao","data_lancamento","descricao",categoria=F("categoria__nome"))       
         info_mov = list(info_mov)
 
         return RespostaConteudo(200, info_mov)
