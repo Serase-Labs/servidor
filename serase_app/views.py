@@ -96,16 +96,17 @@ class MovimentacaoSimplesView(View):
 
             query = query.filter(data_lancamento__lte=data_final)
 
+        # Ordena query
+        query = query.order_by("-data_lancamento")
+
         # Gera lista de valores 
         lista = query.values("id", "descricao", "data_lancamento", "valor_pago")
 
-        #paginacao(request, lista)
 
-
-       # if is_paginacao:
-        #    return RespostaPaginacao(200, list(lista), 5)
-        #else:
-        return RespostaLista(200, list(lista))
+        if "limite" in request.GET:
+            return paginacao(request, lista)
+        else:
+            return RespostaLista(200, list(lista))
 
 class StatusServidorView(View):
     def get(self, request):
