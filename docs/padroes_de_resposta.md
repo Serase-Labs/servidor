@@ -57,7 +57,7 @@ A resposta de paginação é bem detalhada e a maioria dos valores só são util
 | status | int | Status da requisição (padrão) |
 | conteudo | vetor de objetos | Lista dos itens retornados |
 | total | int | Total de itens disponiveis a requisição.|
-| limite | int | O número máximo de itens por requisição. *(definido na requisição ou por padrão)* |
+| limite | int | O número máximo de itens por requisição. *(definido na requisição)* |
 | offset | int | O offset do itens retornados. *(definido na requisição ou por padrão)* |
 | proxima | url | URL da próxima página de itens. *(se nenhuma, `null`)* |
 | anterior | url | URL da página anterior de itens. *(se nenhuma, `null`)* |
