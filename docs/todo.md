@@ -39,10 +39,10 @@ Listagem dos afazeres da primeira entrega do servidor.
 - View Categoria
 	- [ ] Consultar
 - View Listar Movimentações
-	- [ ] Paginação 
-	- [ ] Filtrar por despesa/receita/ambos  
-	- [ ] Filtrar por período 
-	- [ ] Filtrar por categoria 
+	- [x] Paginação 
+	- [x] Filtrar por despesa/receita/ambos  
+	- [x] Filtrar por período 
+	- [x] Filtrar por categoria 
 - View Consultar Saldo
 	- [ ] Filtrar período
 	- [ ] Consultar um mês-ano
