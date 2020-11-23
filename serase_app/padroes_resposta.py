@@ -25,7 +25,7 @@ def RespostaPaginacao(status, conteudo, limite, total=None, offset=0, proxima=No
 def RespostaNotFound():
     return RespostaStatus(404, "Página não encontrada!")
 
-def RespostaAtributoInvalido(atributo, valor=None, escolhas=None):
+def RespostaAtributoInvalido(atributo, valor=None, escolhas=None, limitacao=None):
     mensagem = f"Atributo '{atributo}' não aceita o valor "
     
     if valor:
@@ -36,6 +36,10 @@ def RespostaAtributoInvalido(atributo, valor=None, escolhas=None):
     if escolhas:
         mensagem += ". Os valores aceitos são: "
         mensagem += ", ".join(escolhas)
+        mensagem += "."
+    elif limitacao:
+        mensagem += ". O valor deve "
+        mensagem += limitacao
         mensagem += "."
     else:
         mensagem += "!"
