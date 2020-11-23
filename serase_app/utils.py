@@ -1,6 +1,6 @@
 # Arquivo para criação de códigos uteis para diversas views
 from datetime import datetime
-from .padroes_resposta import RespostaPaginacao
+from .padroes_resposta import RespostaPaginacao, RespostaAtributoInvalido
 
 def converte_data_string(string):
     try:
@@ -11,14 +11,25 @@ def converte_data_string(string):
 def paginacao(request, lista):
     URL_PATH = request.path + "?"
 
-    limite = int(request.GET["limite"])
-    offset = int(request.GET["offset"]) if "offset" in request.GET else 0
     total = lista.count()
 
+    # Pega atributo limite
+    limite = int(request.GET["limite"])
+    if limite <= 0:
+        return RespostaAtributoInvalido("limite", limitacao="ser maior que zero")
+
+    # Pega atributo offset caso exista
+    offset = int(request.GET["offset"]) if "offset" in request.GET else 0
+    if offset < 0:
+        return RespostaAtributoInvalido("offset", limitacao="ser maior ou igual a zero")
+
+    # Limita a pesquisa caso o limite estoure o maximo 
     limite_real = offset+limite if offset+limite<=total else total
 
+    # Limita a lista
     lista = lista[offset:limite_real]
 
+    # Define valores default das paginas como null
     proxima_pagina = None
     pagina_anterior = None
 
