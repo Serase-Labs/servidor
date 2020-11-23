@@ -63,7 +63,7 @@ Note que o acesso através de `127.0.0.1` é apenas possível em sua maquina, e 
 
 Para permitir que outros dispositivos da mesma rede acessem o servidor, você deve modificar o endereço em que o servidor irá rodar como sendo o endereço de ip da sua maquina na rede local. O endereço deve ser algo como `192.168.x.x`, sendo os `x` valores que dependem da rede. 
 ```
-(myvenv) D:\Repositorios\servidor> python manage.py runserver 169.168.x.x
+(myvenv) D:\Repositorios\servidor> python manage.py runserver 192.168.x.x
 ```
 No windows, utilize o comando `ipconfig` no terminal e procure pelo campo de `ipv4`. Caso encontre mais de um campo,  teste com ambos, acessando a url diretamente de um navegador no endereço `192.168.x.x/status`. Se tudo estiver certo a seguinte resposta deve ser retornada pelo servidor:
 ```
