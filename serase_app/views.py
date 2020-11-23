@@ -35,6 +35,7 @@ class PadroesView(View):
 
         return RespostaLista(200, lista)
 
+
 class InfoMovimentacao(View):
     def get(self, request, id):
         #Juan é o usuario padrão no momento        
@@ -43,14 +44,12 @@ class InfoMovimentacao(View):
         #Não tenho muita certeza do que eu estou fazendo
         info = Movimentacao.objects.filter(id=id)
 
-        info_mov = info.values("cod_PadraoMovimentacao","valor_esperado","data_geracao","data_lancamento","valor_pago","descricao",categoria_nome=F("categoria__nome"))       
+        info_mov = info.values("cod_padrao","valor_esperado","valor_pago","data_geracao","data_lancamento","descricao",categoria=F("categoria__nome"))       
         info_mov = list(info_mov)
 
         return RespostaConteudo(200, info_mov)
 
         #Só tá funcionando pro usuário do momento, que é o Juan
-
-
 
 
 class MovimentacaoSimplesView(View):
@@ -107,3 +106,7 @@ class MovimentacaoSimplesView(View):
         #    return RespostaPaginacao(200, list(lista), 5)
         #else:
         return RespostaLista(200, list(lista))
+
+class StatusServidorView(View):
+    def get(self, request):
+        return RespostaStatus(200, "Requisição feita com sucesso!")

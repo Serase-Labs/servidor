@@ -1,7 +1,7 @@
 # Como rodar o servidor 🤔
 Este arquivo vem com o básico para rodar não só o servidor do Serase, mas praticamente qualquer servidor Django com a estrutura padrão de arquivos.
 
-Caso a quantidade de conteúdo deste arquivo te assuste, você pode pular para o [resumo](#📄-resumo), onde há apenas os códigos necessários.
+Caso a quantidade de conteúdo deste arquivo te assuste, você pode pular para o [resumo](#-resumo), onde há apenas os códigos necessários.
 
 O site [Django Girls](https://tutorial.djangogirls.org/pt/django_installation/) foi utilizado como referência para a criação deste documento.
 
@@ -24,7 +24,7 @@ Cada máquina terá seu próprio ambiente virtual, logo um ambiente virtual **n�
 
 Para criar o ambiente virtual em sua máquina, entre na pasta do projeto e digite na linha de comando:
 ```
-D:\Repositorios\servidor> python3 -m venv myvenv
+D:\Repositorios\servidor> python -m venv myvenv
 ```
 Sempre que fizermos alguma ação no servidor, é recomendado executar essa ação utilizando o ambiente virtual. Para acessar o ambiente é necessário digitar:
 ```
@@ -59,13 +59,27 @@ Agora que temos o ambiente virtual e o Django instalados corretamente na sua má
 
 Agora você consegue acessar o servidor em `127.0.0.1:8000`. Para desativar o servidor basta apertar `ctrl+c` no console. 
 
+Note que o acesso através de `127.0.0.1` é apenas possível em sua maquina, e nenhum outro dispositivo consiguirá acessa-lo, nem os que estão na mesma rede que ela, isso inclui a aplicação de React Native rodando no Expo pelo celular. 
+
+Para permitir que outros dispositivos da mesma rede acessem o servidor, você deve modificar o endereço em que o servidor irá rodar como sendo o endereço de ip da sua maquina na rede local. O endereço deve ser algo como `192.168.x.x`, sendo os `x` valores que dependem da rede. 
+```
+(myvenv) D:\Repositorios\servidor> python manage.py runserver 192.168.x.x
+```
+No windows, utilize o comando `ipconfig` no terminal e procure pelo campo de `ipv4`. Caso encontre mais de um campo,  teste com ambos, acessando a url diretamente de um navegador no endereço `192.168.x.x/status`. Se tudo estiver certo a seguinte resposta deve ser retornada pelo servidor:
+```
+{
+	"status": 200,
+	"mensagem": "Requisição feita com sucesso!"
+}
+```
+
 ## 📄 Resumo
 Essa seção possui os códigos necessários para rodar o servidor. É recomendado ler as seções anteriores pelo menos uma vez e utilizar esse resumo para rodar o servidor nas próximas vezes. 
 
 
 Instalar ambiente virtual *(opcional)*:
 
-1. `python3 -m venv myvenv`
+1. `python -m venv myvenv`
 
 Instalar dependências:
 1. `myvenv\Scripts\activate` *(ambiente virtual)*
