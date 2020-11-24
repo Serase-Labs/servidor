@@ -38,18 +38,26 @@ class PadroesView(View):
 
 class InfoMovimentacao(View):
     def get(self, request, id):
-        #Juan é o usuario padrão no momento        
+
+        #Pegando o nome do usuário que nesse caso é o Juan (usuario padrão no momento)        
         usuario = User.objects.get(username="jv_eumsmo") 
 
-        #Não tenho muita certeza do que eu estou fazendo
-        info = Movimentacao.objects.filter(id=id)
+        #Filtrando movimentacao e usuario = pegando a movimentacao do usuario que ele estiver logado
+        info = Movimentacao.objects.filter(cod_usuario=usuario,id=id)
 
-        info_mov = info.values("cod_padrao","valor_esperado","valor_pago","data_geracao","data_lancamento","descricao",categoria=F("categoria__nome"))       
-        info_mov = list(info_mov)
+        #vendo se retorna alguma coisa através do queryset
+        if len(info) > 0 : 
+            
+            # Converte queryset em uma lista que depois tá retornando só um objeto msm
+            info_mov = info.values("cod_padrao","valor_esperado","valor_pago","data_geracao","data_lancamento","descricao",categoria=F("cod_categoria__nome"))       
+            info_mov = list(info_mov)
 
-        return RespostaConteudo(200, info_mov)
+        #vendo se não retorna nada
+        if len(info) == 0:
 
-        #Só tá funcionando pro usuário do momento, que é o Juan
+            return RespostaStatus(404, "Movimentação Inexiste!")
+
+        return RespostaConteudo(200, info_mov[0])
 
 
 class MovimentacaoSimplesView(View):
