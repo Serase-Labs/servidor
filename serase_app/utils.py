@@ -2,15 +2,44 @@
 from datetime import datetime
 from .padroes_resposta import RespostaPaginacao, RespostaAtributoInvalido
 
+# Funções de Data
+
 def converte_data_string(string):
     """
-        Retorna data convertida em objeto de data, ou erro caso formato esteja incorreto
+        Retorna data convertida em objeto de data, ou erro caso formato esteja incorreto.
     """
 
     try:
         return datetime.strptime(string, '%Y-%m-%d')
     except ValueError:
         raise ValueError("Formato incorreto para data, o formato esperado é YYYY-MM-DD")
+
+def converte_mes_ano_string(string):
+    """
+        Retorna mês/ano convertido em objeto de data, ou erro caso formato esteja incorreto.
+    """
+
+    try:
+        return datetime.strptime(string, '%Y-%m')
+    except ValueError:
+        raise ValueError("Formato incorreto para mês/ano, o formato esperado é YYYY-MM")
+
+def mes_ano_atual():
+    """
+        Retorna a data correspondente ao mês/ano do dia atual.
+    """
+
+    return datetime.today()
+
+def is_mes_ano_igual(mes_ano1, mes_ano2):
+    """
+        Retorna True se o mes e o ano das datas passadas forem iguais.
+    """
+
+    return mes_ano1.year==mes_ano2.year and mes_ano1.month==mes_ano2.month
+
+
+# Outras
 
 def paginacao(request, lista):
     """
