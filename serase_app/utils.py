@@ -3,12 +3,20 @@ from datetime import datetime
 from .padroes_resposta import RespostaPaginacao, RespostaAtributoInvalido
 
 def converte_data_string(string):
+    """
+        Retorna data convertida em objeto de data, ou erro caso formato esteja incorreto
+    """
+
     try:
         return datetime.strptime(string, '%Y-%m-%d')
     except ValueError:
         raise ValueError("Formato incorreto para data, o formato esperado é YYYY-MM-DD")
 
 def paginacao(request, lista):
+    """
+        Trata parte de paginação de um queryset, retornando uma resposta de paginação ou de status caso um erro ocorra.
+    """
+
     URL_PATH = request.path + "?"
 
     total = lista.count()
