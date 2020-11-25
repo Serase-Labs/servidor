@@ -19,7 +19,7 @@ Listagem dos afazeres da primeira entrega do servidor.
 	- [ ] Implementar geração de cobrança baseada em padrões
 	- [ ] Checar se a cobrança do padrão foi paga
 - Saldo
-	- [ ] Implementar views visualizar saldo geral
+	- [X] Implementar views visualizar saldo geral
 	- [ ] Descobrir como gerar o Saldo todo mês
 	- [ ] Implementar geração de Saldo todo começo de mês
 - Notificações
@@ -44,7 +44,8 @@ Listagem dos afazeres da primeira entrega do servidor.
 	- [x] Filtrar por período 
 	- [x] Filtrar por categoria 
 - View Consultar Saldo
-	- [ ] Filtrar período
-	- [ ] Consultar um mês-ano
+	- [ ] ~~Filtrar período~~
+	- [x] Consultar um mês-ano
+	- [ ] Gerar saldo caso não exista
 - View Consultar Usuário
 	- [ ] Implementação da view
