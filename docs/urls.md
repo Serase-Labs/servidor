@@ -5,6 +5,7 @@
 |GET|[/padroes/](#consultar-padrões)|Mostrar uma lista de padrões do usuário|padrões|
 |GET|[/movimentacao/{id}/](#consultar-uma-movimentação)|Mostrar informações de uma movimentação especifica do usuário|
 |GET|[/movimentacoes/](#listar-movimentações)|Pega uma lista de movimentacoes do usuário|
+|GET|[/saldo/](#consultar-saldo)|Retorna saldo total e mensal|
 |GET|[/status/](#status-do-servidor)|Retorna resposta de status caso requisição ocorra com sucesso|
 
 ## Consultar padrões
@@ -43,6 +44,18 @@ Retorna uma lista de movimentações com suas informações simples para display
 |data_final|Opcional. Filtra a lista para movimentações com data igual ou anterior a data especificada.|
 |limite|Opcional. Especifica o limite de resultados por requisição, retornando uma resposta de paginação.|
 |offset|Opcional. Utilizada juntamente com `limite`, define o offset da requisição. É setada por padrão nas urls `proxima` e `anterior` retornadas da resposta de paginação.|
+
+
+## Consultar saldo
+**URL:** `/saldo/`
+**Método:** `GET`
+
+Retorna o saldo de um mês específico e o saldo total nesse mês, ou seja, a soma de todas as movimentações até o mês específico, incluindo o próprio mês. O valor padrão do mês é o mês atual, sendo assim, o valor total será a soma de todas as movimentações feitas.
+
+|Parâmetro|Valor|
+|--|--|
+|mes_ano|Opcional. Define um mês para consultar o saldo. Esse parâmetro também afeta o total, o limitando até o mês selecionado. O formato do parâmetro é: YYYY-MM.|
+
 
 ## Status do servidor
 **URL:** `/status/`

@@ -2,7 +2,7 @@ from django.shortcuts import render
 from django.views import View
 from django.http import JsonResponse
 
-from django.db.models import F
+from django.db.models import F, Sum
 from django.contrib.auth.models import User
 from .models import *
 from .padroes_resposta import *
@@ -116,6 +116,56 @@ class MovimentacaoSimplesView(View):
         else:
             return RespostaLista(200, list(lista))
 
+
 class StatusServidorView(View):
     def get(self, request):
         return RespostaStatus(200, "Requisição feita com sucesso!")
+
+
+class SaldoView(View):
+    def get(self, request):
+        hoje = mes_ano_atual()
+
+        # Usuario padrão temporário (até implementado o login)
+        usuario = User.objects.get(username="jv_eumsmo")
+
+        # Filtragem dos padrões do usuário atual
+        query_saldo = Saldo.objects.filter(cod_usuario=usuario)
+
+
+        saldo_mes = None
+        saldo_total = None
+
+        # Filtragem por mes_ano
+        if "mes_ano" in request.GET:
+            try:
+                mes_ano = converte_mes_ano_string(request.GET["mes_ano"])
+            except:
+                return RespostaFormatoDataInvalido()
+
+            if mes_ano > hoje:
+                return RespostaStatus(500, "Mês/ano deve ser menor ou igual ao da data atual!")
+
+            # Caso o mês/ano não seja o atual
+            if not is_mes_ano_igual(mes_ano, hoje):
+                saldo = query_saldo.get(mes_ano__month=mes_ano.month, mes_ano__year=mes_ano.year)
+                saldo_mes = saldo.saldo
+
+        # Calcula saldo caso mês seja o mês atual, uma vez que não existe um objeto Saldo
+        if saldo_mes==None:
+            mes_ano = hoje
+            query_movimentacao = Movimentacao.objects.filter(cod_usuario=usuario, valor_pago__isnull=False)
+            query_movimentacao = query_movimentacao.filter(data_lancamento__year=mes_ano.year, data_lancamento__month=mes_ano.month)
+            saldo_mes = query_movimentacao.aggregate(Sum("valor_pago"))["valor_pago__sum"] or 0
+        
+        # Filtra por saldos anteriores ao mes_ano
+        query_saldo = query_saldo.filter(mes_ano__lt=mes_ano.replace(day=1))
+        saldo_total = query_saldo.aggregate(Sum("saldo"))["saldo__sum"] or 0
+
+        saldo_total+=saldo_mes
+
+        return RespostaConteudo(200, {
+            "mes_ano": mes_ano.strftime("%Y-%m"),
+            "mes": round(saldo_mes, 2),
+            "total": round(saldo_total, 2),
+        })

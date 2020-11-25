@@ -22,5 +22,6 @@ urlpatterns = [
     path('padroes/', PadroesView.as_view(), name='padroes'),
     path('movimentacao/<int:id>/', InfoMovimentacao.as_view(), name='info_movimentacao'),
     path('movimentacoes/', MovimentacaoSimplesView.as_view(), name='movimentacoes'),
-    path('status/', StatusServidorView.as_view(), name='status')
+    path('status/', StatusServidorView.as_view(), name='status'),
+    path('saldo/', SaldoView.as_view(), name='saldo'),
 ]
