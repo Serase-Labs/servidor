@@ -146,17 +146,11 @@ class SaldoView(View):
             if mes_ano > hoje:
                 return RespostaStatus(500, "Mês/ano deve ser menor ou igual ao da data atual!")
 
-            # Caso o mês/ano não seja o atual
-            if not is_mes_ano_igual(mes_ano, hoje):
-                saldo = query_saldo.get(mes_ano__month=mes_ano.month, mes_ano__year=mes_ano.year)
-                saldo_mes = saldo.saldo
 
-        # Calcula saldo caso mês seja o mês atual, uma vez que não existe um objeto Saldo
-        if saldo_mes==None:
+        if mes_ano==None:
             mes_ano = hoje
-            query_movimentacao = Movimentacao.objects.filter(cod_usuario=usuario, valor_pago__isnull=False)
-            query_movimentacao = query_movimentacao.filter(data_lancamento__year=mes_ano.year, data_lancamento__month=mes_ano.month)
-            saldo_mes = query_movimentacao.aggregate(Sum("valor_pago"))["valor_pago__sum"] or 0
+        
+        saldo_mes, saldo_total = calcular_saldo(usuario, mes_ano, hoje)
         
         # Filtra por saldos anteriores ao mes_ano
         query_saldo = query_saldo.filter(mes_ano__lt=mes_ano.replace(day=1))
