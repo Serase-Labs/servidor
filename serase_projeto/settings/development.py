@@ -39,6 +39,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'corsheaders',
     'serase_app',
+    'serase_relatorio',
 ]
 
 CORS_ALLOW_ALL_ORIGINS = True

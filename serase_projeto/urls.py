@@ -14,7 +14,7 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.contrib import admin
-from django.urls import path
+from django.urls import path, include
 from serase_app.views import *
 
 urlpatterns = [
@@ -25,4 +25,5 @@ urlpatterns = [
     path('status/', StatusServidorView.as_view(), name='status'),
     path('saldo/', SaldoView.as_view(), name='saldo'),
     path('usuario/', InformacoesUsuarioView.as_view(), name='usuario'),
+    path('relatorio/', include('serase_relatorio.urls')),
 ]
