@@ -163,3 +163,17 @@ class SaldoView(View):
             "mes": round(saldo_mes, 2),
             "total": round(saldo_total, 2),
         })
+
+
+class InformacoesUsuarioView(View):
+    def get(self, request):
+        # Usuario padrão temporário (até implementado o login)
+        usuario = User.objects.get(username="jv_eumsmo")
+
+        s, saldo_total = calcular_saldo(usuario)
+
+        return RespostaConteudo(200, {
+            "nome": usuario.get_full_name(),
+            "email": usuario.email,
+            "saldo": round(saldo_total, 2),
+        })

@@ -90,7 +90,7 @@ def paginacao(request, lista):
     return RespostaPaginacao(200, list(lista), limite, total=total, offset=offset, proxima=proxima_pagina, anterior=pagina_anterior)
 
 
-def calcular_saldo(usuario, mes_ano, hoje=mes_ano_atual()):
+def calcular_saldo(usuario, mes_ano=mes_ano_atual(), hoje=mes_ano_atual()):
     saldo_mes = None
     saldo_total = None
 
