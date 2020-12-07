@@ -135,6 +135,7 @@ class SaldoView(View):
 
         saldo_mes = None
         saldo_total = None
+        mes_ano = None
 
         # Filtragem por mes_ano
         if "mes_ano" in request.GET:
@@ -162,4 +163,18 @@ class SaldoView(View):
             "mes_ano": mes_ano.strftime("%Y-%m"),
             "mes": round(saldo_mes, 2),
             "total": round(saldo_total, 2),
+        })
+
+
+class InformacoesUsuarioView(View):
+    def get(self, request):
+        # Usuario padrão temporário (até implementado o login)
+        usuario = User.objects.get(username="jv_eumsmo")
+
+        s, saldo_total = calcular_saldo(usuario)
+
+        return RespostaConteudo(200, {
+            "nome": usuario.get_full_name(),
+            "email": usuario.email,
+            "saldo": round(saldo_total, 2),
         })

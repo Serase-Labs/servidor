@@ -1,5 +1,5 @@
 # Arquivo para criação de códigos uteis para diversas views
-from datetime import datetime
+from datetime import datetime, timedelta
 from .padroes_resposta import RespostaPaginacao, RespostaAtributoInvalido
 from .models import *
 from django.db.models import F, Sum
@@ -41,6 +41,14 @@ def is_mes_ano_igual(mes_ano1, mes_ano2):
 
     return mes_ano1.year==mes_ano2.year and mes_ano1.month==mes_ano2.month
 
+def mes_passado(data):
+    """
+        Subtrai um mês da data passada por parâmetro.
+    """
+    dia = data.day
+    data = data.replace(day=1) - timedelta(days=1)
+    data = data.replace(day=dia)
+    return data
 
 # Outras
 
@@ -90,7 +98,7 @@ def paginacao(request, lista):
     return RespostaPaginacao(200, list(lista), limite, total=total, offset=offset, proxima=proxima_pagina, anterior=pagina_anterior)
 
 
-def calcular_saldo(usuario, mes_ano, hoje=mes_ano_atual()):
+def calcular_saldo(usuario, mes_ano=mes_ano_atual(), hoje=mes_ano_atual()):
     saldo_mes = None
     saldo_total = None
 
