@@ -4,9 +4,11 @@ from django.http import JsonResponse
 
 from django.db.models import F, Sum
 from django.contrib.auth.models import User
+
 from .models import *
 from .padroes_resposta import *
 from .utils import *
+
 
 
 class PadroesView(View):
@@ -164,8 +166,63 @@ class SaldoView(View):
 
         saldo_total+=saldo_mes
 
+
         return RespostaConteudo(200, {
             "mes_ano": mes_ano.strftime("%Y-%m"),
             "mes": round(saldo_mes, 2),
             "total": round(saldo_total, 2),
         })
+
+        return RespostaLista(200, lista)
+ 
+class CategoriaView(View):
+    """docstring for CategoriaView"""
+    def get(self, request):
+        query = Categoria.objects.all()
+        '''if "categoria" in request.GET:
+            nome_categoria = request.GET["categoria"]
+            query = query.filter(cod_categoria__nome=nome_categoria)
+        '''    
+        lista = query.values("nome") 
+        lista = list(lista)
+
+        return RespostaLista(200, lista)
+
+
+class InserirPadrao(View):
+   
+    def get(self, request):
+        usuario = User.objects.get(username="jv_eumsmo")
+       
+
+        Padroes = PadraoMovimentacao.objects.filter(username="jv_eumsmo")
+        
+
+        # Inclui no contexto
+        contexto = {
+            'Padroes': Padroes
+        }
+
+        #Retorna um json com uma lista de dicionários com informações dos labels
+        return JsonResponse(contexto)
+
+    def post(self, request):
+        
+
+        json_data = json.loads(request.body)
+        receita_despesa = json_data["receita_despesa"]
+        descricao = json_data["descricao"]
+        periodo = json_data["periodo"]
+        valor = json_data["valor"]
+        dia_cobranca=json_data["dia_cobranca"]
+        data_inicio=json_data["data_inicio"]
+        data_fim=jason_data["data_fim"]
+        cod_categoria=jason_data["cod_categoria"]
+
+        
+        label = Label.objects.create(receita_despesa= receita_despesa, descricao=descricao, periodo=periodo,valor=valor,\
+        dia_cobranca=dia_cobranca,data_inicio=data_inicio, data_fim=data_fim,cod_categoria=cod_categoria)
+        return HttpResponse(status=201)  
+    
+
+
