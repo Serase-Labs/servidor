@@ -135,6 +135,7 @@ class SaldoView(View):
 
         saldo_mes = None
         saldo_total = None
+        mes_ano = None
 
         # Filtragem por mes_ano
         if "mes_ano" in request.GET:
