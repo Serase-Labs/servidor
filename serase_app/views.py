@@ -186,7 +186,15 @@ class Insere_Mov(View):
         data_lancamento  = json_data["data_lancamento"]
 
         label = Movimentacao.objects.create(description=descricao, valor_esperado=valor_esperado,valor_pago=valor_pago,
-        data_geracao=data_geracao,data_lancamento=data_lancamento)
+        data_geracao=data_geracao,data_lancamento=data_lancamento, cod_usuario=usuario, categoria=F("cod_categoria__nome"), cod_padrao=NULL)
 
+        if len(label) > 0 : 
+            
+            print("DEU CERTO")
 
-        return RespostaStatus(200, label)
+        #vendo se não retorna nada
+        if len(label) == 0:
+
+            print("DEU ERRADO")
+
+        return RespostaConteudo(200, label)
