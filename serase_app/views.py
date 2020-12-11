@@ -7,6 +7,7 @@ from django.contrib.auth.models import User
 from .models import *
 from .padroes_resposta import *
 from .utils import *
+import json
 
 
 class PadroesView(View):
@@ -55,7 +56,7 @@ class InfoMovimentacao(View):
         #vendo se não retorna nada
         if len(info) == 0:
 
-            return RespostaStatus(404, "Movimentação Inexiste!")
+            return RespostaStatus(404, "Movimentação Inexistente!")
 
         return RespostaConteudo(200, info_mov[0])
 
@@ -178,3 +179,21 @@ class InformacoesUsuarioView(View):
             "email": usuario.email,
             "saldo": round(saldo_total, 2),
         })
+class Insere_Mov(View):
+
+    def post(self,request):
+    
+        usuario = User.objects.get(username="jv_eumsmo") 
+
+        json_data = json.loads(request.body)
+
+        descricao = json_data["descricao"]
+        valor_esperado = json_data["valor_esperado"]
+        valor_pago = json_data["valor_pago"]
+        data_geracao = json_data["data_geracao"]
+        data_lancamento  = json_data["data_lancamento"]
+
+        label = Movimentacao.objects.create(description=descricao, valor_esperado=valor_esperado,valor_pago=valor_pago,
+        data_geracao=data_geracao,data_lancamento=data_lancamento, cod_usuario=usuario, categoria=F("cod_categoria__nome"), cod_padrao=NULL)
+
+        return RespostaConteudo(200, label)
