@@ -24,10 +24,7 @@ urlpatterns = [
     path('movimentacoes/', MovimentacaoSimplesView.as_view(), name='movimentacoes'),
     path('status/', StatusServidorView.as_view(), name='status'),
     path('saldo/', SaldoView.as_view(), name='saldo'),
-<<<<<<< HEAD
     path('usuario/', InformacoesUsuarioView.as_view(), name='usuario'),
-    path('relatorio/', include('serase_relatorio.urls')),
-=======
-    path('inserir_movimentacao',Insere_Mov.as_view(), name='insere_mov')
->>>>>>> insere-movimentacao
+    path('inserir_movimentacao',Insere_Mov.as_view(), name='insere_mov'),
+    path('relatorio/', include('serase_relatorio.urls')), # Inserir URLs antes dessa linha
 ]
