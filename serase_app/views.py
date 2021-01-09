@@ -5,9 +5,16 @@ from django.http import JsonResponse
 from django.db.models import F, Sum
 from django.contrib.auth.models import User
 
+from rest_framework import viewsets
+from rest_framework.response import Response
+from rest_framework import status
+from rest_framework.decorators import api_view
+from rest_framework import generics
+
 from .models import *
 from .padroes_resposta import *
 from .utils import *
+from .serializers import *
 
 
 
@@ -41,17 +48,17 @@ class PadroesView(View):
 class InfoMovimentacao(View):
     def get(self, request, id):
 
-        #Pegando o nome do usuário que nesse caso é o Juan (usuario padrão no momento)        
-        usuario = User.objects.get(username="jv_eumsmo") 
+        #Pegando o nome do usuário que nesse caso é o Juan (usuario padrão no momento)
+        usuario = User.objects.get(username="jv_eumsmo")
 
         #Filtrando movimentacao e usuario = pegando a movimentacao do usuario que ele estiver logado
         info = Movimentacao.objects.filter(cod_usuario=usuario,id=id)
 
         #vendo se retorna alguma coisa através do queryset
-        if len(info) > 0 : 
-            
+        if len(info) > 0 :
+
             # Converte queryset em uma lista que depois tá retornando só um objeto msm
-            info_mov = info.values("cod_padrao","valor_esperado","valor_pago","data_geracao","data_lancamento","descricao",categoria=F("cod_categoria__nome"))       
+            info_mov = info.values("cod_padrao","valor_esperado","valor_pago","data_geracao","data_lancamento","descricao",categoria=F("cod_categoria__nome"))
             info_mov = list(info_mov)
 
         #vendo se não retorna nada
@@ -109,7 +116,7 @@ class MovimentacaoSimplesView(View):
         # Ordena query
         query = query.order_by("-data_lancamento")
 
-        # Gera lista de valores 
+        # Gera lista de valores
         lista = query.values("id", "descricao", "data_lancamento", "valor_pago")
 
 
@@ -159,7 +166,7 @@ class SaldoView(View):
             query_movimentacao = Movimentacao.objects.filter(cod_usuario=usuario, valor_pago__isnull=False)
             query_movimentacao = query_movimentacao.filter(data_lancamento__year=mes_ano.year, data_lancamento__month=mes_ano.month)
             saldo_mes = query_movimentacao.aggregate(Sum("valor_pago"))["valor_pago__sum"] or 0
-        
+
         # Filtra por saldos anteriores ao mes_ano
         query_saldo = query_saldo.filter(mes_ano__lt=mes_ano.replace(day=1))
         saldo_total = query_saldo.aggregate(Sum("saldo"))["saldo__sum"] or 0
@@ -174,7 +181,7 @@ class SaldoView(View):
         })
 
         return RespostaLista(200, lista)
- 
+
 class CategoriaView(View):
     """docstring for CategoriaView"""
     def get(self, request):
@@ -182,47 +189,12 @@ class CategoriaView(View):
         '''if "categoria" in request.GET:
             nome_categoria = request.GET["categoria"]
             query = query.filter(cod_categoria__nome=nome_categoria)
-        '''    
-        lista = query.values("nome") 
+        '''
+        lista = query.values("nome")
         lista = list(lista)
 
         return RespostaLista(200, lista)
 
-
-class InserirPadrao(View):
-   
-    def get(self, request):
-        usuario = User.objects.get(username="jv_eumsmo")
-       
-
-        Padroes = PadraoMovimentacao.objects.filter(username="jv_eumsmo")
-        
-
-        # Inclui no contexto
-        contexto = {
-            'Padroes': Padroes
-        }
-
-        #Retorna um json com uma lista de dicionários com informações dos labels
-        return JsonResponse(contexto)
-
-    def post(self, request):
-        
-
-        json_data = json.loads(request.body)
-        receita_despesa = json_data["receita_despesa"]
-        descricao = json_data["descricao"]
-        periodo = json_data["periodo"]
-        valor = json_data["valor"]
-        dia_cobranca=json_data["dia_cobranca"]
-        data_inicio=json_data["data_inicio"]
-        data_fim=jason_data["data_fim"]
-        cod_categoria=jason_data["cod_categoria"]
-
-        
-        label = Label.objects.create(receita_despesa= receita_despesa, descricao=descricao, periodo=periodo,valor=valor,\
-        dia_cobranca=dia_cobranca,data_inicio=data_inicio, data_fim=data_fim,cod_categoria=cod_categoria)
-        return HttpResponse(status=201)  
-    
-
-
+class InserirPadrao(generics.ListCreateAPIView):
+   queryset = PadraoMovimentacao.objects.all()
+   serializer_class = PadraoMovimentacaoSerializer

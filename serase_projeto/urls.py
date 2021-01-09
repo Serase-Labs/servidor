@@ -15,7 +15,7 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
-
+from django.conf.urls import url
 from serase_app.views import *
 
 urlpatterns = [
@@ -25,6 +25,5 @@ urlpatterns = [
     path('movimentacoes/', MovimentacaoSimplesView.as_view(), name='movimentacoes'),
     path('status/', StatusServidorView.as_view(), name='status'),
     path('saldo/', SaldoView.as_view(), name='saldo'),
-    path('inserirpadrao/',InserirPadrao.as_view(),name='inserirpadrao')
- 
+    url(r'inserirpadrao/$',InserirPadrao.as_view(),name='inserirpadrao')
 ]
