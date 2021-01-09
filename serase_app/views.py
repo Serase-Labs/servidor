@@ -7,9 +7,10 @@ from django.contrib.auth.models import User
 
 from rest_framework import viewsets
 from rest_framework.response import Response
-from rest_framework import status
+from rest_framework import status, serializers
 from rest_framework.decorators import api_view
-from rest_framework import generics
+
+from rest_framework.views import APIView
 
 from .models import *
 from .padroes_resposta import *
@@ -195,6 +196,16 @@ class CategoriaView(View):
 
         return RespostaLista(200, lista)
 
-class InserirPadrao(generics.ListCreateAPIView):
-   queryset = PadraoMovimentacao.objects.all()
-   serializer_class = PadraoMovimentacaoSerializer
+class InserirPadrao(APIView):
+
+  def get(self,request):
+      print(request.data)
+      Padroes= PadraoMovimentacao.objects.all()
+      serializer= PadraoMovimentacaoSerializer(Padroes, many=True)
+      return Response(serializer.data)
+  def post(self,request):
+      serializer= PadraoMovimentacaoSerializer(data=request.data)
+      if serializer.is_valid():
+        serializer.save()
+        return Response(serializer.data,status=status.HTTP_201_CREATED)
+      return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
