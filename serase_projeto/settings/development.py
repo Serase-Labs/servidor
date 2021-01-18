@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     'corsheaders',
     'serase_app',
     'serase_relatorio',
+    'rest_framework'
 ]
 
 CORS_ALLOW_ALL_ORIGINS = True

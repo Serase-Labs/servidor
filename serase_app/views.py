@@ -4,10 +4,19 @@ from django.http import JsonResponse
 
 from django.db.models import F, Sum
 from django.contrib.auth.models import User
+
+from rest_framework import viewsets
+from rest_framework.response import Response
+from rest_framework import status
+from rest_framework.decorators import api_view
+from rest_framework import generics
+
 from .models import *
 from .padroes_resposta import *
 from .utils import *
 import json
+from .serializers import *
+
 
 
 class PadroesView(View):
@@ -40,17 +49,17 @@ class PadroesView(View):
 class InfoMovimentacao(View):
     def get(self, request, id):
 
-        #Pegando o nome do usuário que nesse caso é o Juan (usuario padrão no momento)        
-        usuario = User.objects.get(username="jv_eumsmo") 
+        #Pegando o nome do usuário que nesse caso é o Juan (usuario padrão no momento)
+        usuario = User.objects.get(username="jv_eumsmo")
 
         #Filtrando movimentacao e usuario = pegando a movimentacao do usuario que ele estiver logado
         info = Movimentacao.objects.filter(cod_usuario=usuario,id=id)
 
         #vendo se retorna alguma coisa através do queryset
-        if len(info) > 0 : 
-            
+        if len(info) > 0 :
+
             # Converte queryset em uma lista que depois tá retornando só um objeto msm
-            info_mov = info.values("cod_padrao","valor_esperado","valor_pago","data_geracao","data_lancamento","descricao",categoria=F("cod_categoria__nome"))       
+            info_mov = info.values("cod_padrao","valor_esperado","valor_pago","data_geracao","data_lancamento","descricao",categoria=F("cod_categoria__nome"))
             info_mov = list(info_mov)
 
         #vendo se não retorna nada
@@ -108,7 +117,7 @@ class MovimentacaoSimplesView(View):
         # Ordena query
         query = query.order_by("-data_lancamento")
 
-        # Gera lista de valores 
+        # Gera lista de valores
         lista = query.values("id", "descricao", "data_lancamento", "valor_pago")
 
 
@@ -160,6 +169,7 @@ class SaldoView(View):
 
         saldo_total+=saldo_mes
 
+
         return RespostaConteudo(200, {
             "mes_ano": mes_ano.strftime("%Y-%m"),
             "mes": round(saldo_mes, 2),
@@ -197,3 +207,21 @@ class Insere_Mov(View):
         data_geracao=data_geracao,data_lancamento=data_lancamento, cod_usuario=usuario, categoria=F("cod_categoria__nome"), cod_padrao=NULL)
 
         return RespostaConteudo(200, label)
+
+
+class CategoriaView(View):
+    """docstring for CategoriaView"""
+    def get(self, request):
+        query = Categoria.objects.all()
+        '''if "categoria" in request.GET:
+            nome_categoria = request.GET["categoria"]
+            query = query.filter(cod_categoria__nome=nome_categoria)
+        '''
+        lista = query.values("nome")
+        lista = list(lista)
+
+        return RespostaLista(200, lista)
+
+class InserirPadrao(generics.ListCreateAPIView):
+   queryset = PadraoMovimentacao.objects.all()
+   serializer_class = PadraoMovimentacaoSerializer
