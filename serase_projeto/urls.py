@@ -25,5 +25,8 @@ urlpatterns = [
     path('movimentacoes/', MovimentacaoSimplesView.as_view(), name='movimentacoes'),
     path('status/', StatusServidorView.as_view(), name='status'),
     path('saldo/', SaldoView.as_view(), name='saldo'),
-    url(r'inserirpadrao/$',InserirPadrao.as_view(),name='inserirpadrao')
+    path('PostPadrao/',PostPadrao.as_view(),name='PostPadrao'),
+    path('DeletePadrao/',DeletePadrao.as_view(),name='DeletePadrao'),
+    path('CriarUsuario:<str:nome>/<str:email>/<str:senha>',CriarUsuario.as_view(),name='CriarUsuario'),
+    path('Login/', Login.as_view(),name='Login')
 ]

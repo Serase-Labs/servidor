@@ -5,6 +5,8 @@ from django.http import JsonResponse
 from django.db.models import F, Sum
 from django.contrib.auth.models import User
 
+from django.contrib.auth import login,logout, authenticate
+
 from rest_framework import viewsets
 from rest_framework.response import Response
 from rest_framework import status, serializers
@@ -196,16 +198,40 @@ class CategoriaView(View):
 
         return RespostaLista(200, lista)
 
-class InserirPadrao(APIView):
-
-  def get(self,request):
-      print(request.data)
-      Padroes= PadraoMovimentacao.objects.all()
-      serializer= PadraoMovimentacaoSerializer(Padroes, many=True)
-      return Response(serializer.data)
-  def post(self,request):
+class PostPadrao(APIView):
+    def post(self,request):
       serializer= PadraoMovimentacaoSerializer(data=request.data)
       if serializer.is_valid():
         serializer.save()
         return Response(serializer.data,status=status.HTTP_201_CREATED)
       return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+class DeletePadrao(APIView):
+    def delete(self,request):  
+        count = PadraoMovimentacao.objects.all().delete()
+        return Response(status= HTTP_200_OK)
+
+
+#Classe de criação de usuario provisoria;Terminar quando definir commo a autenticação ira funcionar.
+
+class CriarUsuario(View):
+    def get(self,request,nome,email,senha):
+        user = User.objects.create_user(nome,email,senha)
+        return RespostaStatus(200, "Requisição feita com sucesso!")
+
+
+class Login(View):#Por enquanto somente o do juan 
+    def my_view(request):
+        username = request.POST['username']
+        password = request.POST['password']
+        user = authenticate(request, username=username, password=password)
+        if user is not None:
+            login(request, user)
+            return RespostaStatus(200, "Requisição feita com sucesso!")
+        else:
+            return RespostaStatus(200, "Senha ou usuario invalidos ")    
+
+
+
+
+
