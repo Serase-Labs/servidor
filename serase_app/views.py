@@ -10,6 +10,7 @@ from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.decorators import api_view
 from rest_framework import generics
+from rest_framework.views import APIView
 
 from .models import *
 from .padroes_resposta import *
@@ -126,11 +127,18 @@ class MovimentacaoSimplesView(View):
         else:
             return RespostaLista(200, list(lista))
 
-
-class StatusServidorView(View):
+class StatusServidorView(APIView):
     def get(self, request):
         return RespostaStatus(200, "Requisição feita com sucesso!")
+    
+    def post(self, request):
 
+        if request.body:
+            json_data = json.loads(request.body)
+            for something in json_data:
+                print(something, json_data[something])
+
+        return RespostaStatus(200, "Requisição POST feita com sucesso!")
 
 class SaldoView(View):
     def get(self, request):
