@@ -25,4 +25,5 @@ urlpatterns = [
     path('status/', StatusServidorView.as_view(), name='status'),
     path('saldo/', SaldoView.as_view(), name='saldo'),
     path('inserir_movimentacao',Insere_Mov.as_view(), name='insere_mov')
+    path('atualizar_movimentacao',Atualizar_Mov.as_view(), name='atualizar_mov')
 ]

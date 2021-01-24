@@ -186,6 +186,34 @@ class Insere_Mov(View):
         data_lancamento  = json_data["data_lancamento"]
 
         label = Movimentacao.objects.create(description=descricao, valor_esperado=valor_esperado,valor_pago=valor_pago,
-        data_geracao=data_geracao,data_lancamento=data_lancamento, cod_usuario=usuario, categoria=F("cod_categoria__nome"), cod_padrao=NULL)
+        data_geracao=data_geracao,data_lancamento=data_lancamento, cod_usuario=usuario, categoria=F("cod_categoria__nome"), cod_padrao=None)
 
         return RespostaConteudo(200, label)
+
+# NÃO TÁ PRONTA AINDA A COISA DE ATUALIZAR
+
+class Atualizar_Mov(View):
+
+    def get(self, request, id):
+
+        usuario = User.objects.get(username="jv_eumsmo") 
+
+        att = Movimentacao.objects.filter(cod_usuario=usuario,id=id)
+
+    
+    def post(self,request,id):
+
+        json_data = json.loads(request.body)
+
+        descricao = json_data["descricao"]
+        valor_esperado = json_data["valor_esperado"]
+        valor_pago = json_data["valor_pago"]
+        data_geracao = json_data["data_geracao"]
+        data_lancamento  = json_data["data_lancamento"]
+
+        att = Movimentacao.objects.create(description=descricao, valor_esperado=valor_esperado,valor_pago=valor_pago,
+        data_geracao=data_geracao,data_lancamento=data_lancamento, cod_usuario=usuario, categoria=F("cod_categoria__nome"), cod_padrao=None)
+
+        return RespostaConteudo(200, label)
+
+ 
