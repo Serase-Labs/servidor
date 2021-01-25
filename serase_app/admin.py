@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Saldo, Categoria, Movimentacao, PadraoMovimentacao
+from .models import Saldo, Categoria, Movimentacao, PadraoMovimentacao,Divida
 
 # Register your models here.
 

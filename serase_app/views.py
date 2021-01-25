@@ -134,6 +134,7 @@ class StatusServidorView(View):
         return RespostaStatus(200, "Requisição feita com sucesso!")
 
 
+
 class SaldoView(View):
     def get(self, request):
         hoje = mes_ano_atual()
@@ -208,9 +209,6 @@ class PostPadrao(APIView):
     
 class DeletePadrao(APIView):
     ###Pegar o codigo do usuario que esta logado
-
-        
-                
     def delete(self,request):  
         # Usuario padrão temporário (até implementado o login)
         usuario = User.objects.get(username="jv_eumsmo")
@@ -221,13 +219,9 @@ class DeletePadrao(APIView):
         count = PadraoMovimentacao.objects.filter(cod_usuario=usuario).delete()
         return Response(status= HTTP_200_OK)
 
-
-#Classe de criação de usuario provisoria;Terminar quando definir commo a autenticação ira funcionar.
-
 class CadastrarUsuario(APIView):
     def post(self,request):
         try:   
-
             json_data = json.loads(request.body)
             email=json_data['email']
             aux_usuario=User.objects.get(email)
@@ -239,29 +233,18 @@ class CadastrarUsuario(APIView):
             senha = json_data['senha']
             novo_usuario = User.objects.create_user(nome,email,senha)
             novo_usuario.save()
-            return RespostaStatus(200, "Requisição feita com sucesso!")
+            return RespostaStatus(200, "Requisição feita com sucesso!")     
 
-'''class EstaLogado (APIView):#por enquanto ONLY juan
+class UsuarioLogado(APIView):
     def get(self,request):
+        username = None
         if request.user.is_authenticated:
-            return  User.objects.filter(username="jv_eumsmo").values()
+            username = request.user.get_username()
+            return RespostaStatus(200, username)  
         else:
-            return RespostaStatus(200, "Senha ou usuario invalidos ")    
-      
-class UserLogado(APIView):
-    def get(self,request):
-         usuario = User.objects.get(username="jv_eumsmo")
+            return RespostaStatus(200, "Senha ou usuario invalidos ")
 
-        # Filtragem dos padrões do usuário atual
-        query = Movimentacao.objects.filter(cod_usuario=usuario)
 
-        return  RespostaStatus(200,User.objects.filter(username="jv_eumsmo").values())
-  '''
-
-class Logout(APIView)         
-    def deslogar(request):
-        logout(request)
-        return RespostaStatus(200, "Requisição feita com sucesso!")      
 class Login(APIView):#Por enquanto somente o do juan 
     def my_view(request):
         json_data = json.loads(request.body)
@@ -274,7 +257,10 @@ class Login(APIView):#Por enquanto somente o do juan
         else:
             return RespostaStatus(200, "Senha ou usuario invalidos ")    
 
-
+class Logout(APIView):         
+    def deslogar(request):
+        logout(request)
+        return RespostaStatus(200, "Requisição feita com sucesso!")
 
 
 
