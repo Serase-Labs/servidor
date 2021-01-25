@@ -27,6 +27,8 @@ urlpatterns = [
     path('saldo/', SaldoView.as_view(), name='saldo'),
     path('PostPadrao/',PostPadrao.as_view(),name='PostPadrao'),
     path('DeletePadrao/',DeletePadrao.as_view(),name='DeletePadrao'),
-    path('CriarUsuario:<str:nome>/<str:email>/<str:senha>',CriarUsuario.as_view(),name='CriarUsuario'),
+    path('UserLogado/',UserLogado.as_view(),name='UserLogado'),
+    path('CadastrarUsuario/',CadastrarUsuario.as_view(),name='CadastrarUsuario'),
+    path("EstaLogado/", EstaLogado.as_view(),name="EstaLogado"), 
     path('Login/', Login.as_view(),name='Login')
 ]
