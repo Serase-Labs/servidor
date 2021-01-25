@@ -4,5 +4,8 @@ from serase_app.views import StatusServidorView
 
 # Para acessar as urls deste arquivo, adicione na frente "relatorio/", por exemplo conseguimos acessar a url "categoria" através de "relatorio/categoria"
 urlpatterns = [
-    path('status/', StatusServidorView.as_view(), name='status_teste'),
+    path('analise/resumo/', ResumoAnaliseView.as_view(), name='analise_resumo'),
+    path('semanal', RelatorioSemanalView.as_view(), name='relatorio_semanal'),
+    path('mensal', RelatorioMensalView.as_view(), name='relatorio_mensal'),
+    path('anual', RelatorioAnualView.as_view(), name='relatorio_anual'),
 ]
