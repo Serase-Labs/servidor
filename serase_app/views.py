@@ -20,7 +20,7 @@ from .serializers import *
 
 
 
-class PadroesView(View):
+class PadroesView(APIView):
     def get(self, request):
         VALORES_VALIDOS_TIPO = ["receita", "despesa"]
 
@@ -47,7 +47,7 @@ class PadroesView(View):
         return RespostaLista(200, lista)
 
 
-class InfoMovimentacao(View):
+class InfoMovimentacao(APIView):
     def get(self, request, id):
 
         #Pegando o nome do usuário que nesse caso é o Juan (usuario padrão no momento)
@@ -71,7 +71,7 @@ class InfoMovimentacao(View):
         return RespostaConteudo(200, info_mov[0])
 
 
-class MovimentacaoSimplesView(View):
+class MovimentacaoSimplesView(APIView):
     def get(self, request):
         # Usuario padrão temporário (até implementado o login)
         usuario = User.objects.get(username="jv_eumsmo")
@@ -140,7 +140,7 @@ class StatusServidorView(APIView):
 
         return RespostaStatus(200, "Requisição POST feita com sucesso!")
 
-class SaldoView(View):
+class SaldoView(APIView):
     def get(self, request):
         hoje = mes_ano_atual()
 
@@ -185,7 +185,7 @@ class SaldoView(View):
         })
 
 
-class InformacoesUsuarioView(View):
+class InformacoesUsuarioView(APIView):
     def get(self, request):
         # Usuario padrão temporário (até implementado o login)
         usuario = User.objects.get(username="jv_eumsmo")
@@ -197,7 +197,7 @@ class InformacoesUsuarioView(View):
             "email": usuario.email,
             "saldo": round(saldo_total, 2),
         })
-class Insere_Mov(View):
+class Insere_Mov(APIView):
 
     def post(self,request):
     
@@ -217,7 +217,7 @@ class Insere_Mov(View):
         return RespostaConteudo(200, label)
 
 
-class CategoriaView(View):
+class CategoriaView(APIView):
     """docstring for CategoriaView"""
     def get(self, request):
         query = Categoria.objects.all()
