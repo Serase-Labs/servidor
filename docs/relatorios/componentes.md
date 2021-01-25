@@ -1,7 +1,14 @@
 # Componentes
-Os relatórios são compostos por múltiplos componentes. Desse modo, uma view pode retornar mais de um componente, porém todos os componentes possuem uma view que o retorna exclusivamente.
+Os relatórios são compostos por múltiplos componentes. Desse modo, uma view pode retornar mais de um componente. Mesmo assim, todos os componentes possuem uma View que o retorna exclusivamente.
+
+Ao chamar um relatório, os parâmetros serão definidos automaticamente pelo relatório, então não há com o que se preocupar. Porém se for necessário chamar apenas um componente, seus parâmetros devem ser passados na chamada.
 
 ## Relatório Resumo
+| parâmetro | valor |
+|--|--|
+| periodo | Aceita: "semana", "mes" e "ano" |
+
+
 Retorna um resumo das movimentações do período especificado.
 
 Informações do resumo:
@@ -19,6 +26,10 @@ Informações do resumo:
 
 
 ## Relatório Análises
+| parâmetro | valor |
+|--|--|
+| periodo | Aceita: "semana", "mes" e "ano" |
+
 Faz uma análise nas categorias das movimentações do período especificado. Para mais informações sobre uma categoria especifica, como as movimentações de tal categoria, procurar uma view base que retorna as informações necessárias, como a view de movimentações.
 
 Informações da análise:
@@ -50,6 +61,10 @@ Retorna informações importantes para gerar um gráfico com as informações da
 ```
 
 ## Relatório Gráfico Categoria
+| parâmetro | valor |
+|--|--|
+| periodo | Aceita: "semana", "mes" e "ano" |
+
 Retorna porcentagem de despesa por categoria do período especificado.
 
 Recebe por parâmetro quantos valores exibir e quantos deixar em "Outros"
@@ -66,6 +81,10 @@ Recebe por parâmetro quantos valores exibir e quantos deixar em "Outros"
 ```
 
 ## Relatório Gráfico Padrão de Despesa
+| parâmetro | valor |
+|--|--|
+| periodo | Aceita: "semana", "mes" e "ano" |
+
 Retorna porcentagem de despesa por padrão de despesa do período especificado.
 
 ```
