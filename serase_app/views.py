@@ -13,7 +13,7 @@ from rest_framework import status, serializers
 from rest_framework.decorators import api_view
 
 from rest_framework.views import APIView
-
+import json
 from .models import *
 from .padroes_resposta import *
 from .utils import *
@@ -220,20 +220,22 @@ class DeletePadrao(APIView):
         return Response(status= HTTP_200_OK)
 
 class CadastrarUsuario(APIView):
-    def post(self,request):
-        try:   
+    def post (self,request):
+        '''try:   
             json_data = json.loads(request.body)
             email=json_data['email']
             aux_usuario=User.objects.get(email)
             if aux_usuario:
                 return render(request,"Erro! Usario já cadastrado")
-        except User.DoesNotExist:
-            nome = json_data['nome']
-            email=json_data['email']
-            senha = json_data['senha']
-            novo_usuario = User.objects.create_user(nome,email,senha)
-            novo_usuario.save()
-            return RespostaStatus(200, "Requisição feita com sucesso!")     
+        except User.DoesNotExist:'''
+        json_data = json.loads(request.body)
+        
+        nome = json_data['nome']
+        email=json_data['email']
+        senha = json_data['senha']
+        novo_usuario = User.objects.create_user(username=nome,email=email,password=senha)
+        novo_usuario.save()
+        return RespostaStatus(200, "Requisição feita com sucesso!")     
 
 class UsuarioLogado(APIView):
     def get(self,request):
@@ -258,7 +260,7 @@ class Login(APIView):#Por enquanto somente o do juan
             return RespostaStatus(200, "Senha ou usuario invalidos ")    
 
 class Logout(APIView):         
-    def deslogar(request):
+    def get(self,request):
         logout(request)
         return RespostaStatus(200, "Requisição feita com sucesso!")
 
