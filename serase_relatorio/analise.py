@@ -3,7 +3,7 @@ from serase_app.models import *
 
 from datetime import datetime, timedelta
 from django.db.models import F, Sum, Q
-from django.db.models.functions import Coalesce
+from django.db.models.functions import Coalesce, Extract
 
 def analise_resumo(usuario, periodo):
     data_inicio, data_fim = calcula_periodo(periodo)
@@ -88,3 +88,27 @@ def analise_categoria(usuario, periodo):
         "maior_salto": cod_categ_salto,
         "maior_economia": cod_categ_economia,
     }
+
+def grafico_semanal(usuario):
+    data_inicio, data_fim = calcula_periodo("semana")
+
+    query = Movimentacao.objects.filter(cod_usuario=usuario, data_lancamento__gte=data_inicio, data_lancamento__lte=data_fim)
+    query = query.annotate(dia=Extract("data_lancamento", "week_day")).values("dia")
+    query = query.annotate(
+        receita=Coalesce(Sum('valor_pago', filter=Q(valor_pago__gte=0)), 0.0),
+        despesa=Coalesce(Sum('valor_pago', filter=Q(valor_pago__lt=0)), 0.0)
+    ).values("dia","receita","despesa").order_by("dia")
+
+    lista_dias_inclusos = list(query.values_list("dia", flat=True))
+    resultado = list(query)
+
+    for obj in resultado:
+        obj['receita'] = round(obj['receita'], 2)
+        obj['despesa'] = round(obj['despesa'], 2)
+
+    for i in list(set(range(1,8)) - set(lista_dias_inclusos)):
+        receita = 0.0
+        despesa = 0.0
+        resultado.append({"dia": i, "receita": receita, "despesa": despesa})
+
+    return sorted(resultado, key=lambda k: k['dia'])

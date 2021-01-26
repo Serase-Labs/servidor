@@ -5,7 +5,7 @@ def calcula_periodo(periodo, hoje=datetime.today()):
         periodo: semana, mes, ano;
     """
     if periodo=="semana":
-        comeco = hoje - timedelta(days=hoje.weekday())
+        comeco = hoje - timedelta(days=hoje.weekday()+1)
         fim = comeco + timedelta(days=6)
     elif periodo=="mes":
         comeco = hoje.replace(day=1)
