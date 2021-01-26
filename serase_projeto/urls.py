@@ -29,6 +29,6 @@ urlpatterns = [
     path('DeletePadrao/',DeletePadrao.as_view(),name='DeletePadrao'),
     path('UserLogado/',UserLogado.as_view(),name='UserLogado'),
     path('CadastrarUsuario/',CadastrarUsuario.as_view(),name='CadastrarUsuario'),
-    path("EstaLogado/", EstaLogado.as_view(),name="EstaLogado"), 
+    path('Login/', Login.as_view(),name='Login'),
     path('Login/', Login.as_view(),name='Login')
 ]
