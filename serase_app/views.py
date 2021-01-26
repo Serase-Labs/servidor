@@ -248,11 +248,11 @@ class UsuarioLogado(APIView):
 
 
 class Login(APIView):#Por enquanto somente o do juan 
-    def my_view(request):
+    def post(self,request):
         json_data = json.loads(request.body)
-        email=json_data['email']
+        nome=json_data['nome']
         senha = json_data['senha']
-        user = authenticate(request, username=username, password=password)
+        user = authenticate(request, username=nome, password=senha)
         if user is not None:
             login(request, user)
             return RespostaStatus(200, "Requisição feita com sucesso!")
