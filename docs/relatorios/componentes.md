@@ -122,5 +122,17 @@ Retorna o saldo total de cada mês do ano.
 ]
 ```
 
-## Relatório Gráfico Anual de Despesa Fixa 
-TO-DO
+## Gráfico Anual de Despesa Fixa 
+Retorna a variação de valor de cada despesa fixa no decorrer do ano.
+
+```
+{
+	"Conta de Luz": [
+		{mes: 1, valor: 576.2},
+		{mes: 2, valor: 585.5},
+		...
+		{mes: 12, valor: 603.1},
+	],
+	"Telefone Fixo": [ ... ],
+	...
+}

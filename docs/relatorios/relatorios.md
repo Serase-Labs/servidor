@@ -65,10 +65,10 @@ Possíveis chamadas:
 
 ## Relatório do Ano
 Componentes:
-  - **Relatório Resumo:** Resumo do valor das movimentações do ano.
+ - **Relatório Resumo:** Resumo do valor das movimentações do ano.
  - **Relatório Análises:** Análise de categoria em relação aos gastos do ano.
-- **Gráfico Anual de Saldo:** Informações para a geração do gráfico de variação do saldo ao longo do ano.
-- **Relatório Gráfico Anual de Despesa Fixa:** ???
+ - **Gráfico Anual de Saldo:** Informações para a geração do gráfico de variação do saldo ao longo do ano.
+ - **Gráfico Anual de Despesa Fixa:** Variação de cada despesa fixa variavel ao longo do ano.
 
 ```
 {
@@ -91,7 +91,16 @@ Componentes:
 		...
 		{mes: 12, valor: 603.1},
 	],
-	grafico_despesa_fixa: undefined
+	grafico_despesa_fixa: {
+		"Conta de Luz": [
+			{mes: 1, valor: 576.2},
+			{mes: 2, valor: 585.5},
+			...
+			{mes: 12, valor: 603.1},
+		],
+		"Telefone Fixo": [ ... ],
+		...
+	}
 }
 ```
 
