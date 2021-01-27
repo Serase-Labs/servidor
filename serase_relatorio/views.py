@@ -30,7 +30,26 @@ class GraficoSemanalView(APIView):
 
         resposta = grafico_semanal(usuario)
 
-        return RespostaConteudo(200, resposta)
+        return RespostaLista(200, resposta)
+
+class GraficoCategoriaView(APIView):
+    def get(self, request):
+        usuario = User.objects.get(username="jv_eumsmo")
+        periodo = request.GET["periodo"]
+
+        resposta = grafico_categoria(usuario, periodo)
+
+        return RespostaLista(200, resposta)
+
+class GraficoPadraoDespesaView(APIView):
+    def get(self, request):
+        usuario = User.objects.get(username="jv_eumsmo")
+        periodo = request.GET["periodo"]
+
+        resposta = grafico_padrao_despesa(usuario, periodo)
+
+        return RespostaLista(200, resposta)
+
 
 # Relatórios
 

@@ -2,8 +2,9 @@ from .utils import *
 from serase_app.models import *
 
 from datetime import datetime, timedelta
-from django.db.models import F, Sum, Q
-from django.db.models.functions import Coalesce, Extract
+from django.db.models import F, Sum, Q, FloatField, Count
+from django.db.models import When, Case, Value, CharField
+from django.db.models.functions import Coalesce, Extract, Cast
 
 def analise_resumo(usuario, periodo):
     data_inicio, data_fim = calcula_periodo(periodo)
@@ -112,3 +113,41 @@ def grafico_semanal(usuario):
         resultado.append({"dia": i, "receita": receita, "despesa": despesa})
 
     return sorted(resultado, key=lambda k: k['dia'])
+
+def grafico_categoria(usuario, periodo):
+    data_inicio, data_fim = calcula_periodo(periodo, hoje)
+
+    query = Movimentacao.objects.filter(cod_usuario=usuario, data_lancamento__gte=data_inicio, data_lancamento__lte=data_fim)
+    query = query.filter(valor_pago__isnull=False)
+
+    total_despesas = query.count()
+
+    query = query.values(nome=F("cod_categoria__nome")).annotate(porcentagem=Cast(100.0 * Count("cod_categoria")/float(total_despesas), FloatField()))
+    query = list(query)
+
+    for obj in query:
+        obj['porcentagem'] = round(obj['porcentagem'], 2)
+
+    return query
+
+def grafico_padrao_despesa(usuario, periodo):
+    data_inicio, data_fim = calcula_periodo(periodo, hoje)
+
+    query = Movimentacao.objects.filter(cod_usuario=usuario, data_lancamento__gte=data_inicio, data_lancamento__lte=data_fim)
+    query = query.filter(cod_padrao__isnull=False, valor_pago__isnull=False, valor_pago__lt=0)
+
+    query = query.annotate(tipo=Case(
+        When(cod_padrao__valor__isnull=True, then=Value("Variáveis")),
+        default=Value("Fixas"),
+        output_field=CharField()
+    ))
+
+    total = query.count()
+
+    query = query.values(nome=F("tipo")).annotate(porcentagem=Cast(100.0 * Count("tipo")/float(total), FloatField()))
+    query = list(query)
+
+    for obj in query:
+        obj['porcentagem'] = round(obj['porcentagem'], 2)
+
+    return query
