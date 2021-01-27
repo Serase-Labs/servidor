@@ -91,7 +91,7 @@ def analise_categoria(usuario, periodo):
     }
 
 def grafico_semanal(usuario):
-    data_inicio, data_fim = calcula_periodo("semana")
+    data_inicio, data_fim = calcula_periodo("semanal")
 
     query = Movimentacao.objects.filter(cod_usuario=usuario, data_lancamento__gte=data_inicio, data_lancamento__lte=data_fim)
     query = query.annotate(dia=Extract("data_lancamento", "week_day")).values("dia")

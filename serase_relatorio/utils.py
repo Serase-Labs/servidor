@@ -1,17 +1,18 @@
 from datetime import datetime, timedelta
+from serase_app.padroes_resposta import RespostaAtributoInvalido
 
 def calcula_periodo(periodo, hoje=datetime.today()):
     """
         periodo: semana, mes, ano;
     """
-    if periodo=="semana":
+    if periodo=="semanal":
         comeco = hoje - timedelta(days=hoje.weekday()+1)
         fim = comeco + timedelta(days=6)
-    elif periodo=="mes":
+    elif periodo=="mensal":
         comeco = hoje.replace(day=1)
         prox_mes = hoje.replace(day=28) + timedelta(days=4)
         fim = prox_mes - timedelta(days=prox_mes.day)
-    elif periodo=="ano":
+    elif periodo=="anual":
         comeco = hoje.replace(month=1, day=1)
         fim = hoje.replace(month=12, day=31)
     else:
@@ -20,14 +21,25 @@ def calcula_periodo(periodo, hoje=datetime.today()):
     return comeco, fim
 
 def calcula_periodo_anterior(periodo, hoje=datetime.today()):
-    if periodo=="semana":
+    if periodo=="semanal":
         data = hoje - timedelta(days=7)
-    elif periodo=="mes":
+    elif periodo=="mensal":
         mes = hoje.replace(day=1) - timedelta(days=1)
         data = hoje.replace(month=mes.month, year=mes.year)
-    elif periodo=="ano":
+    elif periodo=="anual":
         data = hoje - timedelta(years=1)
     else:
         return None, None
 
     return calcula_periodo(periodo,data)
+
+
+PERIODOS_VALIDOS = ["semanal", "mensal", "anual"]
+
+def validade_periodo(periodo):
+    if periodo not in PERIODOS_VALIDOS:
+        return False
+    return True
+
+def erro_periodo(periodo):
+    return RespostaAtributoInvalido("periodo", periodo, PERIODOS_VALIDOS)

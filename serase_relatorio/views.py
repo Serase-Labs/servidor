@@ -3,22 +3,29 @@ from rest_framework.views import APIView
 
 from serase_app.padroes_resposta import *
 from .analise import *
+from .utils import validade_periodo, erro_periodo
 
 # Analises / Componentes
 
+
+
 class ResumoAnaliseView(APIView):
-    def get(self, request):
+    def get(self, request, periodo):
+        if not validade_periodo(periodo):
+            return erro_periodo(periodo)
+
         usuario = User.objects.get(username="jv_eumsmo")
-        periodo = request.GET["periodo"]
         
         resposta = analise_resumo(usuario, periodo)
 
         return RespostaConteudo(200, resposta)
 
 class CategoriaAnaliseView(APIView):
-    def get(self, request):
+    def get(self, request, periodo):
+        if not validade_periodo(periodo):
+            return erro_periodo(periodo)
+
         usuario = User.objects.get(username="jv_eumsmo")
-        periodo = request.GET["periodo"]
         
         resposta = analise_categoria(usuario, periodo)
 
@@ -33,18 +40,22 @@ class GraficoSemanalView(APIView):
         return RespostaLista(200, resposta)
 
 class GraficoCategoriaView(APIView):
-    def get(self, request):
+    def get(self, request, periodo):
+        if not validade_periodo(periodo):
+            return erro_periodo(periodo)
+
         usuario = User.objects.get(username="jv_eumsmo")
-        periodo = request.GET["periodo"]
 
         resposta = grafico_categoria(usuario, periodo)
 
         return RespostaLista(200, resposta)
 
 class GraficoPadraoDespesaView(APIView):
-    def get(self, request):
+    def get(self, request, periodo):
+        if not validade_periodo(periodo):
+            return erro_periodo(periodo)
+
         usuario = User.objects.get(username="jv_eumsmo")
-        periodo = request.GET["periodo"]
 
         resposta = grafico_padrao_despesa(usuario, periodo)
 
@@ -56,7 +67,7 @@ class GraficoPadraoDespesaView(APIView):
 class RelatorioSemanalView(APIView):
     def get(self, request):
         usuario = User.objects.get(username="jv_eumsmo")
-        periodo = "semana"
+        periodo = "semanal"
 
         return RespostaConteudo(200, {
             "resumo": analise_resumo(usuario, periodo),
@@ -67,7 +78,7 @@ class RelatorioSemanalView(APIView):
 class RelatorioMensalView(APIView):
     def get(self, request):
         usuario = User.objects.get(username="jv_eumsmo")
-        periodo = "mes"
+        periodo = "mensal"
 
         return RespostaConteudo(200, {
             "resumo": analise_resumo(usuario, periodo),
@@ -77,7 +88,7 @@ class RelatorioMensalView(APIView):
 class RelatorioAnualView(APIView):
     def get(self, request):
         usuario = User.objects.get(username="jv_eumsmo")
-        periodo = "ano"
+        periodo = "anual"
 
         return RespostaConteudo(200, {
             "resumo": analise_resumo(usuario, periodo),
