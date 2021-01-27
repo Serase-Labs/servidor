@@ -7,7 +7,7 @@ Listagem dos afazeres da primeira entrega do servidor.
 	 - [ ] Definir respostas do relatório
 	 - [ ] Criar app no Django para o relatório
 	 - [ ] Implementar views do relatório
-- Login
+- Login (pra depois)
 	- [ ] Pesquisar sobre implementação com Ajax
 	- [ ] Implementar de fato
 	- [ ] Ajustar views
@@ -15,12 +15,12 @@ Listagem dos afazeres da primeira entrega do servidor.
 	- [ ] Saber o que fazer com dívidas/metas
 	- [ ] Definir lógica de dívidas/metas
 - Padrões de Movimentação
-	- [ ] Descobrir como gerar uma cobrança todo mês
+	- [ ] Descobrir como gerar uma cobrança todo mês (pra depois, com o login)
 	- [ ] Implementar geração de cobrança baseada em padrões
 	- [ ] Checar se a cobrança do padrão foi paga
 - Saldo
 	- [X] Implementar views visualizar saldo geral
-	- [ ] Descobrir como gerar o Saldo todo mês
+	- [ ] Descobrir como gerar o Saldo todo mês (pra depois, com o login)
 	- [ ] Implementar geração de Saldo todo começo de mês
 - Notificações
 	- [ ] O que vamos fazer com as notificações?

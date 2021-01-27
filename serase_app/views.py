@@ -4,13 +4,23 @@ from django.http import JsonResponse
 
 from django.db.models import F, Sum
 from django.contrib.auth.models import User
+
+from rest_framework import viewsets
+from rest_framework.response import Response
+from rest_framework import status
+from rest_framework.decorators import api_view
+from rest_framework import generics
+from rest_framework.views import APIView
+
 from .models import *
 from .padroes_resposta import *
 from .utils import *
 import json
+from .serializers import *
 
 
-class PadroesView(View):
+
+class PadroesView(APIView):
     def get(self, request):
         VALORES_VALIDOS_TIPO = ["receita", "despesa"]
 
@@ -37,20 +47,20 @@ class PadroesView(View):
         return RespostaLista(200, lista)
 
 
-class InfoMovimentacao(View):
+class InfoMovimentacao(APIView):
     def get(self, request, id):
 
-        #Pegando o nome do usuário que nesse caso é o Juan (usuario padrão no momento)        
-        usuario = User.objects.get(username="jv_eumsmo") 
+        #Pegando o nome do usuário que nesse caso é o Juan (usuario padrão no momento)
+        usuario = User.objects.get(username="jv_eumsmo")
 
         #Filtrando movimentacao e usuario = pegando a movimentacao do usuario que ele estiver logado
         info = Movimentacao.objects.filter(cod_usuario=usuario,id=id)
 
         #vendo se retorna alguma coisa através do queryset
-        if len(info) > 0 : 
-            
+        if len(info) > 0 :
+
             # Converte queryset em uma lista que depois tá retornando só um objeto msm
-            info_mov = info.values("cod_padrao","valor_esperado","valor_pago","data_geracao","data_lancamento","descricao",categoria=F("cod_categoria__nome"))       
+            info_mov = info.values("cod_padrao","valor_esperado","valor_pago","data_geracao","data_lancamento","descricao",categoria=F("cod_categoria__nome"))
             info_mov = list(info_mov)
 
         #vendo se não retorna nada
@@ -61,7 +71,7 @@ class InfoMovimentacao(View):
         return RespostaConteudo(200, info_mov[0])
 
 
-class MovimentacaoSimplesView(View):
+class MovimentacaoSimplesView(APIView):
     def get(self, request):
         # Usuario padrão temporário (até implementado o login)
         usuario = User.objects.get(username="jv_eumsmo")
@@ -108,7 +118,7 @@ class MovimentacaoSimplesView(View):
         # Ordena query
         query = query.order_by("-data_lancamento")
 
-        # Gera lista de valores 
+        # Gera lista de valores
         lista = query.values("id", "descricao", "data_lancamento", "valor_pago")
 
 
@@ -117,13 +127,20 @@ class MovimentacaoSimplesView(View):
         else:
             return RespostaLista(200, list(lista))
 
-
-class StatusServidorView(View):
+class StatusServidorView(APIView):
     def get(self, request):
         return RespostaStatus(200, "Requisição feita com sucesso!")
+    
+    def post(self, request):
 
+        if request.body:
+            json_data = json.loads(request.body)
+            for something in json_data:
+                print(something, json_data[something])
 
-class SaldoView(View):
+        return RespostaStatus(200, "Requisição POST feita com sucesso!")
+
+class SaldoView(APIView):
     def get(self, request):
         hoje = mes_ano_atual()
 
@@ -136,6 +153,7 @@ class SaldoView(View):
 
         saldo_mes = None
         saldo_total = None
+        mes_ano = None
 
         # Filtragem por mes_ano
         if "mes_ano" in request.GET:
@@ -147,17 +165,11 @@ class SaldoView(View):
             if mes_ano > hoje:
                 return RespostaStatus(500, "Mês/ano deve ser menor ou igual ao da data atual!")
 
-            # Caso o mês/ano não seja o atual
-            if not is_mes_ano_igual(mes_ano, hoje):
-                saldo = query_saldo.get(mes_ano__month=mes_ano.month, mes_ano__year=mes_ano.year)
-                saldo_mes = saldo.saldo
 
-        # Calcula saldo caso mês seja o mês atual, uma vez que não existe um objeto Saldo
-        if saldo_mes==None:
+        if mes_ano==None:
             mes_ano = hoje
-            query_movimentacao = Movimentacao.objects.filter(cod_usuario=usuario, valor_pago__isnull=False)
-            query_movimentacao = query_movimentacao.filter(data_lancamento__year=mes_ano.year, data_lancamento__month=mes_ano.month)
-            saldo_mes = query_movimentacao.aggregate(Sum("valor_pago"))["valor_pago__sum"] or 0
+        
+        saldo_mes, saldo_total = calcular_saldo(usuario, mes_ano, hoje)
         
         # Filtra por saldos anteriores ao mes_ano
         query_saldo = query_saldo.filter(mes_ano__lt=mes_ano.replace(day=1))
@@ -165,13 +177,27 @@ class SaldoView(View):
 
         saldo_total+=saldo_mes
 
+
         return RespostaConteudo(200, {
             "mes_ano": mes_ano.strftime("%Y-%m"),
             "mes": round(saldo_mes, 2),
             "total": round(saldo_total, 2),
         })
 
-class Insere_Mov(View):
+
+class InformacoesUsuarioView(APIView):
+    def get(self, request):
+        # Usuario padrão temporário (até implementado o login)
+        usuario = User.objects.get(username="jv_eumsmo")
+
+        s, saldo_total = calcular_saldo(usuario)
+
+        return RespostaConteudo(200, {
+            "nome": usuario.get_full_name(),
+            "email": usuario.email,
+            "saldo": round(saldo_total, 2),
+        })
+class Insere_Mov(APIView):
 
     def post(self,request):
     
@@ -186,6 +212,7 @@ class Insere_Mov(View):
         data_lancamento  = json_data["data_lancamento"]
 
         label = Movimentacao.objects.create(description=descricao, valor_esperado=valor_esperado,valor_pago=valor_pago,
+<<<<<<< HEAD
         data_geracao=data_geracao,data_lancamento=data_lancamento, cod_usuario=usuario, categoria=F("cod_categoria__nome"), cod_padrao=None)
 
         return RespostaConteudo(200, label)
@@ -217,3 +244,26 @@ class Atualizar_Mov(View):
         return RespostaConteudo(200, label)
 
  
+=======
+        data_geracao=data_geracao,data_lancamento=data_lancamento, cod_usuario=usuario, categoria=F("cod_categoria__nome"), cod_padrao=0)
+
+        return RespostaConteudo(200, label)
+
+
+class CategoriaView(APIView):
+    """docstring for CategoriaView"""
+    def get(self, request):
+        query = Categoria.objects.all()
+        '''if "categoria" in request.GET:
+            nome_categoria = request.GET["categoria"]
+            query = query.filter(cod_categoria__nome=nome_categoria)
+        '''
+        lista = query.values("nome")
+        lista = list(lista)
+
+        return RespostaLista(200, lista)
+
+class InserirPadrao(generics.ListCreateAPIView):
+   queryset = PadraoMovimentacao.objects.all()
+   serializer_class = PadraoMovimentacaoSerializer
+>>>>>>> dev

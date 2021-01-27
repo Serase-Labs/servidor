@@ -39,9 +39,12 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'corsheaders',
     'serase_app',
+    'serase_relatorio',
+    'rest_framework',
 ]
 
 CORS_ALLOW_ALL_ORIGINS = True
+CORS_ALLOW_CREDENTIALS = True # Permitir cookies futuramente (caso não seja utilizado, remover)
 
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
