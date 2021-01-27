@@ -7,6 +7,7 @@ urlpatterns = [
     path('analise/resumo/', ResumoAnaliseView.as_view(), name='analise_resumo'),
     path('analise/categoria/', CategoriaAnaliseView.as_view(), name='analise_categoria'),
     path('grafico/semanal/', GraficoSemanalView.as_view(), name='grafico_semanal'),
+    path('grafico/categoria/', GraficoCategoriaView.as_view(), name='grafico_categoria'),
     path('semanal', RelatorioSemanalView.as_view(), name='relatorio_semanal'),
     path('mensal', RelatorioMensalView.as_view(), name='relatorio_mensal'),
     path('anual', RelatorioAnualView.as_view(), name='relatorio_anual'),
