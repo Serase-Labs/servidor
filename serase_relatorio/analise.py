@@ -131,7 +131,7 @@ def grafico_categoria(usuario, periodo):
     return query
 
 def grafico_padrao_despesa(usuario, periodo):
-    data_inicio, data_fim = calcula_periodo(periodo, hoje)
+    data_inicio, data_fim = calcula_periodo(periodo)
 
     query = Movimentacao.objects.filter(cod_usuario=usuario, data_lancamento__gte=data_inicio, data_lancamento__lte=data_fim)
     query = query.filter(cod_padrao__isnull=False, valor_pago__isnull=False, valor_pago__lt=0)
