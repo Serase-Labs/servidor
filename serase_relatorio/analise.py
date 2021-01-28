@@ -77,12 +77,13 @@ def analise_categoria(usuario, periodo):
     
     # Pegar os nomes de cada categoria através de seus ids
     categorias = Categoria.objects.filter(id__in=categoria_ids)
+
     if qperiodo_atual.count() > 0:
-        cod_categ_economia = categorias.get(id=cod_categ_economia).nome
+        cod_categ_despesa = categorias.get(id=cod_categ_despesa).nome
     
     if qrelacao_ultimo.count() > 0:
         cod_categ_salto = categorias.get(id=cod_categ_salto).nome
-        cod_categ_despesa = categorias.get(id=cod_categ_despesa).nome
+        cod_categ_economia = categorias.get(id=cod_categ_economia).nome
 
     return {
         "maior_despesa": cod_categ_despesa,
