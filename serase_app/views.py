@@ -197,6 +197,7 @@ class InformacoesUsuarioView(APIView):
             "email": usuario.email,
             "saldo": round(saldo_total, 2),
         })
+
 class Insere_Mov(APIView):
 
     def post(self,request):
@@ -210,42 +211,10 @@ class Insere_Mov(APIView):
         valor_pago = json_data["valor_pago"]
         data_geracao = json_data["data_geracao"]
         data_lancamento  = json_data["data_lancamento"]
+        categoria = json_data["categoria"]
 
-        label = Movimentacao.objects.create(description=descricao, valor_esperado=valor_esperado,valor_pago=valor_pago,
-<<<<<<< HEAD
-        data_geracao=data_geracao,data_lancamento=data_lancamento, cod_usuario=usuario, categoria=F("cod_categoria__nome"), cod_padrao=None)
-
-        return RespostaConteudo(200, label)
-
-# NÃO TÁ PRONTA AINDA A COISA DE ATUALIZAR
-
-class Atualizar_Mov(View):
-
-    def get(self, request, id):
-
-        usuario = User.objects.get(username="jv_eumsmo") 
-
-        att = Movimentacao.objects.filter(cod_usuario=usuario,id=id)
-
-    
-    def post(self,request,id):
-
-        json_data = json.loads(request.body)
-
-        descricao = json_data["descricao"]
-        valor_esperado = json_data["valor_esperado"]
-        valor_pago = json_data["valor_pago"]
-        data_geracao = json_data["data_geracao"]
-        data_lancamento  = json_data["data_lancamento"]
-
-        att = Movimentacao.objects.create(description=descricao, valor_esperado=valor_esperado,valor_pago=valor_pago,
-        data_geracao=data_geracao,data_lancamento=data_lancamento, cod_usuario=usuario, categoria=F("cod_categoria__nome"), cod_padrao=None)
-
-        return RespostaConteudo(200, label)
-
- 
-=======
-        data_geracao=data_geracao,data_lancamento=data_lancamento, cod_usuario=usuario, categoria=F("cod_categoria__nome"), cod_padrao=0)
+        label = Movimentacao.objects.create(descricao=descricao, valor_esperado=valor_esperado,valor_pago=valor_pago,
+        data_geracao=data_geracao,data_lancamento=data_lancamento, cod_usuario=usuario, categoria=categoria,cod_padrao=None)
 
         return RespostaConteudo(200, label)
 
@@ -266,4 +235,24 @@ class CategoriaView(APIView):
 class InserirPadrao(generics.ListCreateAPIView):
    queryset = PadraoMovimentacao.objects.all()
    serializer_class = PadraoMovimentacaoSerializer
->>>>>>> dev
+
+class AtualizacaoMovimentacao(APIView):
+
+    def post(self,request,id):
+    
+        user = User.objects.get(username="jv_eumsmo") 
+
+        movimentacao = Movimentacao.objects.filter(cod_usuario=user,id=id)
+
+        json_data = json.loads(request.body)
+
+        descricao = json_data["descricao"]
+        valor_esperado = json_data["valor_esperado"]
+        valor_pago = json_data["valor_pago"]
+        data_geracao = json_data["data_geracao"]
+        data_lancamento  = json_data["data_lancamento"]
+
+        movi = Movimentacao.objects.create(id=id,description=descricao, valor_esperado=valor_esperado,valor_pago=valor_pago,
+        data_geracao=data_geracao,data_lancamento=data_lancamento, cod_usuario=user, categoria=F("cod_categoria__nome"), cod_padrao=0)
+
+        return RespostaConteudo(200, movi)
