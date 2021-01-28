@@ -151,3 +151,16 @@ def grafico_padrao_despesa(usuario, periodo):
         obj['porcentagem'] = round(obj['porcentagem'], 2)
 
     return query
+
+def grafico_anual_despesa(usuario, periodo):
+    usuario = User.objects.get(username="jv_eumsmo")
+
+    hoje = datetime.strptime("2020-09-10", '%Y-%m-%d')
+    periodo = "anual"
+    data_inicio, data_fim = calcula_periodo(periodo, hoje)
+
+    query = Movimentacao.objects.filter(cod_usuario=usuario, data_lancamento__gte=data_inicio, data_lancamento__lte=data_fim)
+    query = query.filter(cod_padrao__isnull=False, valor_pago__isnull=False, valor_pago__lt=0, cod_padrao__valor__isnull=True)
+
+
+    query.annotate(mes=Extract("data_lancamento", "month")).values("mes", nome=F("cod_padrao__descricao")).annotate(valor=Sum("valor_pago"))
