@@ -5,13 +5,17 @@ from django.http import JsonResponse
 from django.db.models import F, Sum
 from django.contrib.auth.models import User
 
+from django.contrib.auth import login,logout, authenticate
+
 from rest_framework import viewsets
 from rest_framework.response import Response
-from rest_framework import status
+from rest_framework import status, serializers
 from rest_framework.decorators import api_view
 from rest_framework import generics
 from rest_framework.views import APIView
 
+from rest_framework.views import APIView
+import json
 from .models import *
 from .padroes_resposta import *
 from .utils import *
@@ -230,6 +234,70 @@ class CategoriaView(APIView):
 
         return RespostaLista(200, lista)
 
-class InserirPadrao(generics.ListCreateAPIView):
-   queryset = PadraoMovimentacao.objects.all()
-   serializer_class = PadraoMovimentacaoSerializer
+class PostPadrao(APIView):
+    def post(self,request):
+      serializer= PadraoMovimentacaoSerializer(data=request.data)
+      if serializer.is_valid():
+        serializer.save()
+        return Response(serializer.data,status=status.HTTP_201_CREATED)
+      return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+class DeletePadrao(APIView):
+    ###Pegar o codigo do usuario que esta logado
+    def delete(self,request):  
+        # Usuario padrão temporário (até implementado o login)
+        usuario = User.objects.get(username="jv_eumsmo")
+
+        # Filtragem dos padrões do usuário atual
+        query = Movimentacao.objects.filter(cod_usuario=usuario)
+
+        count = PadraoMovimentacao.objects.filter(cod_usuario=usuario).delete()
+        return Response(status= HTTP_200_OK)
+
+class CadastrarUsuario(APIView):
+    def post (self,request):
+        '''try:   
+            json_data = json.loads(request.body)
+            email=json_data['email']
+            aux_usuario=User.objects.get(email)
+            if aux_usuario:
+                return render(request,"Erro! Usario já cadastrado")
+        except User.DoesNotExist:'''
+        json_data = json.loads(request.body)
+        
+        nome = json_data['nome']
+        email=json_data['email']
+        senha = json_data['senha']
+        novo_usuario = User.objects.create_user(username=nome,email=email,password=senha)
+        novo_usuario.save()
+        return RespostaStatus(200, "Requisição feita com sucesso!")     
+
+class UsuarioLogado(APIView):
+    def get(self,request):
+        username = None
+        if request.user.is_authenticated:
+            username = request.user.get_username()
+            return RespostaStatus(200, username)  
+        else:
+            return RespostaStatus(200, "Senha ou usuario invalidos ")
+
+
+class Login(APIView):#Por enquanto somente o do juan 
+    def post(self,request):
+        json_data = json.loads(request.body)
+        nome=json_data['nome']
+        senha = json_data['senha']
+        user = authenticate(request, username=nome, password=senha)
+        if user is not None:
+            login(request, user)
+            return RespostaStatus(200, "Requisição feita com sucesso!")
+        else:
+            return RespostaStatus(200, "Senha ou usuario invalidos ")    
+
+class Logout(APIView):         
+    def get(self,request):
+        logout(request)
+        return RespostaStatus(200, "Requisição feita com sucesso!")
+
+
+
