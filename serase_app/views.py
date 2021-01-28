@@ -281,6 +281,9 @@ class UsuarioLogado(APIView):
         else:
             return RespostaStatus(200, "Senha ou usuario invalidos ")
 
+class InserirPadrao(generics.ListCreateAPIView):
+   queryset = PadraoMovimentacao.objects.all()
+   serializer_class = PadraoMovimentacaoSerializer
 
 class Login(APIView):#Por enquanto somente o do juan 
     def post(self,request):
