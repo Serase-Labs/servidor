@@ -27,7 +27,7 @@ def calcula_periodo_anterior(periodo, hoje=datetime.today()):
         mes = hoje.replace(day=1) - timedelta(days=1)
         data = hoje.replace(month=mes.month, year=mes.year)
     elif periodo=="anual":
-        data = hoje - timedelta(years=1)
+        data = hoje.replace(year=hoje.year-1)
     else:
         return None, None
 
