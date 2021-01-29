@@ -9,6 +9,8 @@ class Saldo(models.Model):
 
 class Categoria(models.Model):
     nome = models.CharField(max_length=20)
+    def __str__(self):
+        return self.nome 
 
 
 class PadraoMovimentacao(models.Model):
@@ -39,6 +41,7 @@ class Movimentacao(models.Model):
 
     def __str__(self):
         return self.descricao 
+
 class Divida(models.Model):
 
     TIPOS_DE_JUROS=(("composto","composto"),("simples","simples"))
