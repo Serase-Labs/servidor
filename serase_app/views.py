@@ -4,6 +4,7 @@ from django.http import JsonResponse
 
 from django.db.models import F, Sum
 from django.contrib.auth.models import User
+from django.forms.models import model_to_dict
 
 from rest_framework import viewsets
 from rest_framework.response import Response
@@ -197,6 +198,8 @@ class InformacoesUsuarioView(APIView):
             "email": usuario.email,
             "saldo": round(saldo_total, 2),
         })
+
+
 class Insere_Mov(APIView):
 
     def post(self,request):
@@ -212,15 +215,17 @@ class Insere_Mov(APIView):
         data_lancamento  = json_data["data_lancamento"]
         categoria = json_data["categoria"]
 
-        entry = categoria.value()
-        if Categoria.filter(categoria=entry.pk).exists():
+        if Categoria.objects.filter(nome=categoria).exists():
             print("FUNCIONA MERDA")
 
 
             label = Movimentacao.objects.create(descricao=descricao, valor_esperado=valor_esperado,valor_pago=valor_pago,
-            data_geracao=data_geracao,data_lancamento=data_lancamento, cod_usuario=usuario,categoria=F(categoria), cod_padrao=None)
+            data_geracao=data_geracao,data_lancamento=data_lancamento, cod_usuario=usuario,cod_categoria=Categoria.objects.get(nome=categoria), cod_padrao=None)
 
-            return RespostaConteudo(200, label)
+            return RespostaConteudo(200, model_to_dict(label))
+
+        else:
+            return RespostaStatus(404, "Categoria Inexistente!")
 
 
 class CategoriaView(APIView):
