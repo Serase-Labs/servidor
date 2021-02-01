@@ -12,6 +12,7 @@ urlpatterns = [
         path('categoria/<str:periodo>/', GraficoCategoriaView.as_view(), name='grafico_categoria'),
         path('padrao/<str:periodo>/', GraficoPadraoDespesaView.as_view(), name='grafico_padrao'),
         path('semanal/', GraficoSemanalView.as_view(), name='grafico_semanal'),
+        path('despesa/anual/', GraficoAnualDespesaView.as_view(), name='grafico_despesa_anual'),
     ])),
     path('relatorio/', include([
         path('semanal/', RelatorioSemanalView.as_view(), name='relatorio_semanal'),
