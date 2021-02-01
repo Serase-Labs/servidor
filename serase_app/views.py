@@ -244,3 +244,22 @@ class CategoriaView(APIView):
 class InserirPadrao(generics.ListCreateAPIView):
    queryset = PadraoMovimentacao.objects.all()
    serializer_class = PadraoMovimentacaoSerializer
+
+
+class AtualizaMovimentação(APIView):
+
+    def post(self,request,id):
+
+        usuario = User.objects.get(username="jv_eumsmo") 
+
+        info = Movimentacao.objects.filter(cod_usuario=usuario,id=id)
+
+        json_data = json.loads(request.body)
+
+        descricao = json_data["descricao"]
+        valor_esperado = json_data["valor_esperado"]
+        valor_pago = json_data["valor_pago"]
+        data_geracao = json_data["data_geracao"]
+        data_lancamento  = json_data["data_lancamento"]
+        categoria = json_data["categoria"]
+
