@@ -281,16 +281,19 @@ class UsuarioLogado(APIView):
         else:
             return RespostaStatus(200, "Senha ou usuario invalidos ")
 
-class InserirPadrao(generics.ListCreateAPIView):
-   queryset = PadraoMovimentacao.objects.all()
-   serializer_class = PadraoMovimentacaoSerializer
+
 
 class Login(APIView):#Por enquanto somente o do juan 
     def post(self,request):
         json_data = json.loads(request.body)
-        nome=json_data['nome']
+        email=json_data['email']
         senha = json_data['senha']
+        Usuario= User.objects.get(email=email)
+        nome =Usuario.get_username()
         user = authenticate(request, username=nome, password=senha)
+        
+        
+       # nomeUsuario= User.objects.get_username()
         if user is not None:
             login(request, user)
             return RespostaStatus(200, "Requisição feita com sucesso!")
@@ -302,5 +305,7 @@ class Logout(APIView):
         logout(request)
         return RespostaStatus(200, "Requisição feita com sucesso!")
 
+        
+        
 
 

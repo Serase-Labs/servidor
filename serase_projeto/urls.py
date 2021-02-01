@@ -31,7 +31,6 @@ urlpatterns = [
     path('CadastrarUsuario/',CadastrarUsuario.as_view(),name='CadastrarUsuario'), 
     path('Login/', Login.as_view(),name='Login'),
     path('Logout/',Logout.as_view(),name='Logout'),
-    url('inserirpadrao/$',InserirPadrao.as_view(),name='inserirpadrao'),
     path('usuario/', InformacoesUsuarioView.as_view(), name='usuario'),
     path('inserir_movimentacao',Insere_Mov.as_view(), name='insere_mov'),
     path('', include('serase_relatorio.urls')), # Inserir URLs antes dessa linha
