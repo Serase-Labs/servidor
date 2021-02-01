@@ -1,7 +1,10 @@
 from datetime import datetime, timedelta
 from serase_app.padroes_resposta import RespostaAtributoInvalido
 
-def calcula_periodo(periodo, hoje=datetime.today()):
+def get_hoje():
+    return datetime.strptime("2020-09-10", '%Y-%m-%d')#datetime.today()
+
+def calcula_periodo(periodo, hoje=get_hoje()):
     """
         periodo: semana, mes, ano;
     """
@@ -20,7 +23,7 @@ def calcula_periodo(periodo, hoje=datetime.today()):
 
     return comeco, fim
 
-def calcula_periodo_anterior(periodo, hoje=datetime.today()):
+def calcula_periodo_anterior(periodo, hoje=get_hoje()):
     if periodo=="semanal":
         data = hoje - timedelta(days=7)
     elif periodo=="mensal":
