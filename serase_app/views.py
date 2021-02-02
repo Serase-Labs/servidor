@@ -229,7 +229,7 @@ class CategoriaView(APIView):
             nome_categoria = request.GET["categoria"]
             query = query.filter(cod_categoria__nome=nome_categoria)
         '''
-        lista = query.values("nome")
+        lista = query.values_list("nome", flat=True)
         lista = list(lista)
 
         return RespostaLista(200, lista)
