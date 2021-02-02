@@ -20,18 +20,17 @@ from serase_app.views import *
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path('padrao/', PadraoView.as_view(), name='padrao'),
     path('padroes/', PadroesView.as_view(), name='padroes'),
-    path('movimentacao/<int:id>/', InfoMovimentacao.as_view(), name='info_movimentacao'),
+    path('movimentacao/<int:id>/', InfoMovimentacaoView.as_view(), name='info_movimentacao'),
     path('movimentacoes/', MovimentacaoSimplesView.as_view(), name='movimentacoes'),
-    path('status/', StatusServidorView.as_view(), name='status'),
     path('saldo/', SaldoView.as_view(), name='saldo'),
-    path('PostPadrao/',PostPadrao.as_view(),name='PostPadrao'),
-    path('DeletePadrao/',DeletePadrao.as_view(),name='DeletePadrao'),
-    path('UsuarioLogado/',UsuarioLogado.as_view(),name='UserLogado'),
-    path('CadastrarUsuario/',CadastrarUsuario.as_view(),name='CadastrarUsuario'), 
-    path('Login/', Login.as_view(),name='Login'),
-    path('Logout/',Logout.as_view(),name='Logout'),
+    path('usuario/logado/',UsuarioLogadoView.as_view(),name='UserLogado'),
     path('usuario/', InformacoesUsuarioView.as_view(), name='usuario'),
-    path('inserir_movimentacao',Insere_Mov.as_view(), name='insere_mov'),
+    path('movimentacao/',InsereMovimentacaoView.as_view(), name='insere_mov'),
+    path('cadastro/',CadastrarUsuarioView.as_view(),name='CadastrarUsuario'), 
+    path('login/', LoginView.as_view(),name='Login'),
+    path('logout/',LogoutView.as_view(),name='Logout'),
+    path('status/', StatusServidorView.as_view(), name='status'),
     path('', include('serase_relatorio.urls')), # Inserir URLs antes dessa linha
 ]

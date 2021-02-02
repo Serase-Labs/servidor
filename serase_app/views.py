@@ -23,7 +23,27 @@ import json
 from .serializers import *
 
 
+# Views sobre Padrão
 
+class PadraoView(APIView):
+    def post(self,request):
+      serializer= PadraoMovimentacaoSerializer(data=request.data)
+      if serializer.is_valid():
+        serializer.save()
+        return Response(serializer.data,status=status.HTTP_201_CREATED)
+      return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    ###Pegar o codigo do usuario que esta logado
+    def delete(self,request):  
+        # Usuario padrão temporário (até implementado o login)
+        usuario = User.objects.get(username="jv_eumsmo")
+
+        # Filtragem dos padrões do usuário atual
+        query = Movimentacao.objects.filter(cod_usuario=usuario)
+
+        count = PadraoMovimentacao.objects.filter(cod_usuario=usuario).delete()
+        return Response(status= HTTP_200_OK)
+        
 class PadroesView(APIView):
     def get(self, request):
         VALORES_VALIDOS_TIPO = ["receita", "despesa"]
@@ -49,9 +69,11 @@ class PadroesView(APIView):
         lista = list(lista)
 
         return RespostaLista(200, lista)
+    
 
+# Views sobre Movimentação
 
-class InfoMovimentacao(APIView):
+class InfoMovimentacaoView(APIView):
     def get(self, request, id):
 
         #Pegando o nome do usuário que nesse caso é o Juan (usuario padrão no momento)
@@ -73,7 +95,6 @@ class InfoMovimentacao(APIView):
             return RespostaStatus(404, "Movimentação Inexistente!")
 
         return RespostaConteudo(200, info_mov[0])
-
 
 class MovimentacaoSimplesView(APIView):
     def get(self, request):
@@ -131,18 +152,27 @@ class MovimentacaoSimplesView(APIView):
         else:
             return RespostaLista(200, list(lista))
 
-class StatusServidorView(APIView):
-    def get(self, request):
-        return RespostaStatus(200, "Requisição feita com sucesso!")
+class InsereMovimentacaoView(APIView):
+
+    def post(self,request):
     
-    def post(self, request):
+        usuario = User.objects.get(username="jv_eumsmo") 
 
-        if request.body:
-            json_data = json.loads(request.body)
-            for something in json_data:
-                print(something, json_data[something])
+        json_data = json.loads(request.body)
 
-        return RespostaStatus(200, "Requisição POST feita com sucesso!")
+        descricao = json_data["descricao"]
+        valor_esperado = json_data["valor_esperado"]
+        valor_pago = json_data["valor_pago"]
+        data_geracao = json_data["data_geracao"]
+        data_lancamento  = json_data["data_lancamento"]
+
+        label = Movimentacao.objects.create(description=descricao, valor_esperado=valor_esperado,valor_pago=valor_pago,
+        data_geracao=data_geracao,data_lancamento=data_lancamento, cod_usuario=usuario, categoria=F("cod_categoria__nome"), cod_padrao=0)
+
+        return RespostaConteudo(200, label)
+
+
+# Views sobre Saldo
 
 class SaldoView(APIView):
     def get(self, request):
@@ -189,37 +219,7 @@ class SaldoView(APIView):
         })
 
 
-class InformacoesUsuarioView(APIView):
-    def get(self, request):
-        # Usuario padrão temporário (até implementado o login)
-        usuario = User.objects.get(username="jv_eumsmo")
-
-        s, saldo_total = calcular_saldo(usuario)
-
-        return RespostaConteudo(200, {
-            "nome": usuario.get_full_name(),
-            "email": usuario.email,
-            "saldo": round(saldo_total, 2),
-        })
-class Insere_Mov(APIView):
-
-    def post(self,request):
-    
-        usuario = User.objects.get(username="jv_eumsmo") 
-
-        json_data = json.loads(request.body)
-
-        descricao = json_data["descricao"]
-        valor_esperado = json_data["valor_esperado"]
-        valor_pago = json_data["valor_pago"]
-        data_geracao = json_data["data_geracao"]
-        data_lancamento  = json_data["data_lancamento"]
-
-        label = Movimentacao.objects.create(description=descricao, valor_esperado=valor_esperado,valor_pago=valor_pago,
-        data_geracao=data_geracao,data_lancamento=data_lancamento, cod_usuario=usuario, categoria=F("cod_categoria__nome"), cod_padrao=0)
-
-        return RespostaConteudo(200, label)
-
+# Views sobre Categoria
 
 class CategoriaView(APIView):
     """docstring for CategoriaView"""
@@ -234,27 +234,10 @@ class CategoriaView(APIView):
 
         return RespostaLista(200, lista)
 
-class PostPadrao(APIView):
-    def post(self,request):
-      serializer= PadraoMovimentacaoSerializer(data=request.data)
-      if serializer.is_valid():
-        serializer.save()
-        return Response(serializer.data,status=status.HTTP_201_CREATED)
-      return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    
-class DeletePadrao(APIView):
-    ###Pegar o codigo do usuario que esta logado
-    def delete(self,request):  
-        # Usuario padrão temporário (até implementado o login)
-        usuario = User.objects.get(username="jv_eumsmo")
 
-        # Filtragem dos padrões do usuário atual
-        query = Movimentacao.objects.filter(cod_usuario=usuario)
+# Views relacionadas ao Login
 
-        count = PadraoMovimentacao.objects.filter(cod_usuario=usuario).delete()
-        return Response(status= HTTP_200_OK)
-
-class CadastrarUsuario(APIView):
+class CadastrarUsuarioView(APIView):
     def post (self,request):
         '''try:   
             json_data = json.loads(request.body)
@@ -272,7 +255,7 @@ class CadastrarUsuario(APIView):
         novo_usuario.save()
         return RespostaStatus(200, "Requisição feita com sucesso!")     
 
-class UsuarioLogado(APIView):
+class UsuarioLogadoView(APIView):
     def get(self,request):
         username = None
         if request.user.is_authenticated:
@@ -281,9 +264,20 @@ class UsuarioLogado(APIView):
         else:
             return RespostaStatus(200, "Senha ou usuario invalidos ")
 
+class InformacoesUsuarioView(APIView):
+    def get(self, request):
+        # Usuario padrão temporário (até implementado o login)
+        usuario = User.objects.get(username="jv_eumsmo")
 
+        s, saldo_total = calcular_saldo(usuario)
 
-class Login(APIView):#Por enquanto somente o do juan 
+        return RespostaConteudo(200, {
+            "nome": usuario.get_full_name(),
+            "email": usuario.email,
+            "saldo": round(saldo_total, 2),
+        })
+
+class LoginView(APIView):#Por enquanto somente o do juan 
     def post(self,request):
         json_data = json.loads(request.body)
         email=json_data['email']
@@ -300,12 +294,23 @@ class Login(APIView):#Por enquanto somente o do juan
         else:
             return RespostaStatus(200, "Senha ou usuario invalidos ")    
 
-class Logout(APIView):         
+class LogoutView(APIView):         
     def get(self,request):
         logout(request)
         return RespostaStatus(200, "Requisição feita com sucesso!")
 
-        
-        
 
+# Misc Views
 
+class StatusServidorView(APIView):
+    def get(self, request):
+        return RespostaStatus(200, "Requisição feita com sucesso!")
+    
+    def post(self, request):
+
+        if request.body:
+            json_data = json.loads(request.body)
+            for something in json_data:
+                print(something, json_data[something])
+
+        return RespostaStatus(200, "Requisição POST feita com sucesso!")
