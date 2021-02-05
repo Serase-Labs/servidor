@@ -322,7 +322,7 @@ class Insere_Mov(APIView):
         return RespostaConteudo(200, model_to_dict(label))
 
     else:
-        sreturn RespostaStatus(404, "Categoria Inexistente!")
+        return RespostaStatus(404, "Categoria Inexistente!")
 
 # Misc Views
 
