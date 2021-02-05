@@ -179,16 +179,22 @@ def grafico_anual_despesa(usuario):
     return resultado
 def grafico_anual_saldo(usuario):
     usuario = User.objects.get(username="jv_eumsmo")
-    hoje = datetime.strptime("2020-09-10", '%Y-%m-%d')
-    periodo = "anual"
-    data_inicio= calcula_periodo(periodo, hoje)
-    query = Saldo.objects.filter(cod_usuario=usuario,mes_ano__lte=hoje)
+    hoje=datetime.strptime("2020-09-10", '%Y-%m-%d')
+    periodo="anual"
+    ano= hoje.year
+    query = Saldo.objects.filter(cod_usuario=usuario,mes_ano__year=ano)
+    query= query.annotate(mes=Extract("mes_ano","month")).annotate(ano=Extract("mes_ano","year")).values("saldo","mes","ano")
     
     resultado = dict()
     query = list(query)
-    
+    # Formata o resultado para a resposta esperada
+    for obj in query:
+        valor = {"mes": obj["mes"], "saldo": round(float(obj["saldo"]), 2)}
+        if obj["ano"] not in resultado:
+            resultado[obj["ano"]] = list()
+        resultado[obj["ano"]].append(valor)
     
         
-    return query
+    return resultado
     
 
