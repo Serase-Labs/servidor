@@ -4,6 +4,7 @@ from django.http import JsonResponse
 
 from django.db.models import F, Sum
 from django.contrib.auth.models import User
+from django.forms.models import model_to_dict
 
 from django.contrib.auth import login,logout, authenticate
 
@@ -279,6 +280,12 @@ class InformacoesUsuarioView(APIView):
             "email": usuario.email,
             "saldo": round(saldo_total, 2),
         })
+<<<<<<< HEAD
+=======
+
+
+class Insere_Mov(APIView):
+>>>>>>> atualizar-movimentacao
 
 class LoginView(APIView):#Por enquanto somente o do juan 
     def post(self,request):
@@ -297,11 +304,32 @@ class LoginView(APIView):#Por enquanto somente o do juan
         else:
             return RespostaStatus(200, "Senha ou usuario invalidos ")    
 
+<<<<<<< HEAD
 class LogoutView(APIView):         
     def get(self,request):
         logout(request)
         return RespostaStatus(200, "Requisição feita com sucesso!")
 
+=======
+        descricao = json_data["descricao"]
+        valor_esperado = json_data["valor_esperado"]
+        valor_pago = json_data["valor_pago"]
+        data_geracao = json_data["data_geracao"]
+        data_lancamento  = json_data["data_lancamento"]
+        categoria = json_data["categoria"]
+
+        if Categoria.objects.filter(nome=categoria).exists():
+            print("FUNCIONA MERDA")
+
+
+            label = Movimentacao.objects.create(descricao=descricao, valor_esperado=valor_esperado,valor_pago=valor_pago,
+            data_geracao=data_geracao,data_lancamento=data_lancamento, cod_usuario=usuario,cod_categoria=Categoria.objects.get(nome=categoria), cod_padrao=None)
+
+            return RespostaConteudo(200, model_to_dict(label))
+
+        else:
+            return RespostaStatus(404, "Categoria Inexistente!")
+>>>>>>> atualizar-movimentacao
 
 # Misc Views
 
@@ -316,4 +344,29 @@ class StatusServidorView(APIView):
             for something in json_data:
                 print(something, json_data[something])
 
+<<<<<<< HEAD
         return RespostaStatus(200, "Requisição POST feita com sucesso!")
+=======
+class InserirPadrao(generics.ListCreateAPIView):
+   queryset = PadraoMovimentacao.objects.all()
+   serializer_class = PadraoMovimentacaoSerializer
+
+
+class AtualizaMovimentação(APIView):
+
+    def post(self,request,id):
+
+        usuario = User.objects.get(username="jv_eumsmo") 
+
+        info = Movimentacao.objects.filter(cod_usuario=usuario,id=id)
+
+        json_data = json.loads(request.body)
+
+        descricao = json_data["descricao"]
+        valor_esperado = json_data["valor_esperado"]
+        valor_pago = json_data["valor_pago"]
+        data_geracao = json_data["data_geracao"]
+        data_lancamento  = json_data["data_lancamento"]
+        categoria = json_data["categoria"]
+
+>>>>>>> atualizar-movimentacao
