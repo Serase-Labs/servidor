@@ -29,16 +29,9 @@ urlpatterns = [
     path('categoria/', CategoriaView.as_view(), name='categoria'),
     path('usuario/logado/',UsuarioLogadoView.as_view(),name='UserLogado'),
     path('usuario/', InformacoesUsuarioView.as_view(), name='usuario'),
-<<<<<<< HEAD
     path('cadastro/',CadastrarUsuarioView.as_view(),name='CadastrarUsuario'), 
     path('login/', LoginView.as_view(),name='Login'),
     path('logout/',LogoutView.as_view(),name='Logout'),
     path('status/', StatusServidorView.as_view(), name='status'),
     path('', include('serase_relatorio.urls')), # Inserir URLs antes dessa linha
 ]
-=======
-    path('inserir_movimentacao',Insere_Mov.as_view(), name='insere_mov'),
-    #path('atualizar_movimentacao',AtualizacaoMovimentacao.as_view(), name='autaliza_mov'),
-    path('relatorio/', include('serase_relatorio.urls')), # Inserir URLs antes dessa linha
-]
->>>>>>> atualizar-movimentacao
