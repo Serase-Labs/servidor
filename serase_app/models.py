@@ -7,8 +7,13 @@ class Saldo(models.Model):
     mes_ano = models.DateField()
     saldo = models.DecimalField(max_digits=10, decimal_places=2)
 
+    def __str__(self):
+        return "["+str(self.mes_ano.month)+"/"+str(self.mes_ano.year)+"] - ("+str(self.saldo)+")" 
+
 class Categoria(models.Model):
     nome = models.CharField(max_length=20)
+    def __str__(self):
+        return self.nome 
 
 
 class PadraoMovimentacao(models.Model):
@@ -39,6 +44,7 @@ class Movimentacao(models.Model):
 
     def __str__(self):
         return self.descricao 
+
 class Divida(models.Model):
 
     TIPOS_DE_JUROS=(("composto","composto"),("simples","simples"))

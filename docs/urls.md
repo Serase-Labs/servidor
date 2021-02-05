@@ -3,9 +3,17 @@
 |Método| Caminho | Utilização |
 |--|--|--|
 |GET|[/padroes/](#consultar-padrões)|Mostrar uma lista de padrões do usuário|padrões|
+|POST|/padrao/|Alterar um padrão já existente|
+|DELETE|/padrao/|Deletar um padrão especificado pelo usuário|
+|GET|[/movimentacoes/](#listar-movimentações)|Pegar uma lista de movimentações do usuário|
 |GET|[/movimentacao/{id}/](#consultar-uma-movimentação)|Mostrar informações de uma movimentação especifica do usuário|
-|GET|[/movimentacoes/](#listar-movimentações)|Pega uma lista de movimentacoes do usuário|
+|POST|/movimentacao/|Inserir movimentação do usuário|
 |GET|[/saldo/](#consultar-saldo)|Retorna saldo total e mensal|
+|GET|/categoria/|Retorna uma lista com todas as categorias cadastradas no servidor|
+|GET|/usuario/|Retorna informações sobre o usuário logado|
+|POST|/login/|Realiza login do usuário|
+|GET|/logout/|Realiza logout do usuário logado|
+|POST|/cadastro/|Realiza cadastro do usuário|
 |GET|[/status/](#status-do-servidor)|Retorna resposta de status caso requisição ocorra com sucesso|
 
 ## Consultar padrões
