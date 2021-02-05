@@ -245,7 +245,7 @@ class CadastrarUsuarioView(APIView):
         senha = json_data['senha'] 
         aux_usuario=User.objects.filter(email=email)
         if aux_usuario:
-            return RespostaStatus(200,"Erro! Usario já cadastrado")
+            return RespostaStatus(400,"Erro! Usario já cadastrado")
         novo_usuario = User.objects.create_user(username=nome,email=email,password=senha)
         novo_usuario.save()
         return RespostaStatus(200, "Requisição feita com sucesso!")        
@@ -257,7 +257,7 @@ class UsuarioLogadoView(APIView):
             username = request.user.get_username()
             return RespostaStatus(200, username)  
         else:
-            return RespostaStatus(200, "Senha ou usuario invalidos ")
+            return RespostaStatus(400, "Senha ou usuario invalidos ")
 
 class InformacoesUsuarioView(APIView):
     def get(self, request):
@@ -287,7 +287,7 @@ class LoginView(APIView):#Por enquanto somente o do juan
             login(request, user)
             return RespostaStatus(200, "Requisição feita com sucesso!")
         else:
-            return RespostaStatus(200, "Senha ou usuario invalidos ")    
+            return RespostaStatus(400, "Senha ou usuario invalidos ")    
 
 class LogoutView(APIView):         
     def get(self,request):
