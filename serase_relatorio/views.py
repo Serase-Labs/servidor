@@ -68,6 +68,16 @@ class GraficoAnualDespesaView(APIView):
         resposta = grafico_anual_despesa(usuario)
 
         return RespostaConteudo(200, resposta)
+class GraficoAnualSaldoView(APIView):
+
+    def get(self,request):
+        usuario = User.objects.get(username="jv_eumsmo")
+
+        resposta = grafico_anual_saldo(usuario)
+
+        return RespostaConteudo(200, resposta)
+
+                        
 
 # Relatórios
 

@@ -177,3 +177,18 @@ def grafico_anual_despesa(usuario):
         resultado[obj["nome"]].append(valor)
 
     return resultado
+def grafico_anual_saldo(usuario):
+    usuario = User.objects.get(username="jv_eumsmo")
+    hoje = datetime.strptime("2020-09-10", '%Y-%m-%d')
+    periodo = "anual"
+    data_inicio= calcula_periodo(periodo, hoje)
+    query = Saldo.objects.filter(cod_usuario=usuario,mes_ano__lte=hoje)
+    
+    resultado = dict()
+    query = list(query)
+    
+    
+        
+    return query
+    
+

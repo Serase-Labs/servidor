@@ -238,25 +238,17 @@ class CategoriaView(APIView):
 # Views relacionadas ao Login
 
 class CadastrarUsuarioView(APIView):
-    def post (self,request):
-        def post (self,request):
-        try:   
-            json_data = json.loads(request.body)
-            nome = json_data['nome']
-            email=json_data['email']
-            senha = json_data['senha']
-            aux_usuario=User.objects.get(email=email)
-            if aux_usuario:
-                return render(request,"Erro! Usario já cadastrado")
-        except User.DoesNotExist:
-            json_data = json.loads(request.body)
-        
-            nome = json_data['nome']
-            email=json_data['email']
-            senha = json_data['senha']
-            novo_usuario = User.objects.create_user(username=nome,email=email,password=senha)
-            novo_usuario.save()
-            return RespostaStatus(200, "Requisição feita com sucesso!")        
+    def post (self,request): 
+        json_data = json.loads(request.body)
+        nome = json_data['nome']
+        email=json_data['email']
+        senha = json_data['senha'] 
+        aux_usuario=User.objects.filter(email=email)
+        if aux_usuario:
+            return RespostaStatus(200,"Erro! Usario já cadastrado")
+        novo_usuario = User.objects.create_user(username=nome,email=email,password=senha)
+        novo_usuario.save()
+        return RespostaStatus(200, "Requisição feita com sucesso!")        
 
 class UsuarioLogadoView(APIView):
     def get(self,request):
