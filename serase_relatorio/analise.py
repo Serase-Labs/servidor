@@ -2,8 +2,9 @@ from .utils import *
 from serase_app.models import *
 
 from datetime import datetime, timedelta
-from django.db.models import F, Sum, Q
-from django.db.models.functions import Coalesce, Extract
+from django.db.models import F, Sum, Q, FloatField, Count
+from django.db.models import When, Case, Value, CharField
+from django.db.models.functions import Coalesce, Extract, Cast
 
 def analise_resumo(usuario, periodo):
     data_inicio, data_fim = calcula_periodo(periodo)
@@ -76,12 +77,13 @@ def analise_categoria(usuario, periodo):
     
     # Pegar os nomes de cada categoria através de seus ids
     categorias = Categoria.objects.filter(id__in=categoria_ids)
+
     if qperiodo_atual.count() > 0:
-        cod_categ_economia = categorias.get(id=cod_categ_economia).nome
+        cod_categ_despesa = categorias.get(id=cod_categ_despesa).nome
     
     if qrelacao_ultimo.count() > 0:
         cod_categ_salto = categorias.get(id=cod_categ_salto).nome
-        cod_categ_despesa = categorias.get(id=cod_categ_despesa).nome
+        cod_categ_economia = categorias.get(id=cod_categ_economia).nome
 
     return {
         "maior_despesa": cod_categ_despesa,
@@ -90,7 +92,7 @@ def analise_categoria(usuario, periodo):
     }
 
 def grafico_semanal(usuario):
-    data_inicio, data_fim = calcula_periodo("semana")
+    data_inicio, data_fim = calcula_periodo("semanal")
 
     query = Movimentacao.objects.filter(cod_usuario=usuario, data_lancamento__gte=data_inicio, data_lancamento__lte=data_fim)
     query = query.annotate(dia=Extract("data_lancamento", "week_day")).values("dia")
@@ -112,3 +114,66 @@ def grafico_semanal(usuario):
         resultado.append({"dia": i, "receita": receita, "despesa": despesa})
 
     return sorted(resultado, key=lambda k: k['dia'])
+
+def grafico_categoria(usuario, periodo):
+    data_inicio, data_fim = calcula_periodo(periodo, hoje)
+
+    query = Movimentacao.objects.filter(cod_usuario=usuario, data_lancamento__gte=data_inicio, data_lancamento__lte=data_fim)
+    query = query.filter(valor_pago__isnull=False)
+
+    total_despesas = query.count()
+
+    query = query.values(nome=F("cod_categoria__nome")).annotate(porcentagem=Cast(100.0 * Count("cod_categoria")/float(total_despesas), FloatField()))
+    query = list(query)
+
+    for obj in query:
+        obj['porcentagem'] = round(obj['porcentagem'], 2)
+
+    return query
+
+def grafico_padrao_despesa(usuario, periodo):
+    data_inicio, data_fim = calcula_periodo(periodo)
+
+    query = Movimentacao.objects.filter(cod_usuario=usuario, data_lancamento__gte=data_inicio, data_lancamento__lte=data_fim)
+    query = query.filter(cod_padrao__isnull=False, valor_pago__isnull=False, valor_pago__lt=0)
+
+    query = query.annotate(tipo=Case(
+        When(cod_padrao__valor__isnull=True, then=Value("Variáveis")),
+        default=Value("Fixas"),
+        output_field=CharField()
+    ))
+
+    total = query.count()
+
+    query = query.values(nome=F("tipo")).annotate(porcentagem=Cast(100.0 * Count("tipo")/float(total), FloatField()))
+    query = list(query)
+
+    for obj in query:
+        obj['porcentagem'] = round(obj['porcentagem'], 2)
+
+    return query
+
+def grafico_anual_despesa(usuario):
+    usuario = User.objects.get(username="jv_eumsmo")
+
+    hoje = datetime.strptime("2020-09-10", '%Y-%m-%d')
+    periodo = "anual"
+    data_inicio, data_fim = calcula_periodo(periodo, hoje)
+
+    query = Movimentacao.objects.filter(cod_usuario=usuario, data_lancamento__gte=data_inicio, data_lancamento__lte=data_fim)
+    query = query.filter(cod_padrao__isnull=False, valor_pago__isnull=False, valor_pago__lt=0, cod_padrao__valor__isnull=True)
+
+    query = query.annotate(mes=Extract("data_lancamento", "month")).values("mes", nome=F("cod_padrao__descricao")).annotate(valor=Sum("valor_pago"))
+
+    resultado = dict()
+    query = list(query)
+
+    # Formata o resultado para a resposta esperada
+    for obj in query:
+        valor = {"mes": obj["mes"], "valor": round(float(obj["valor"]), 2)}
+        
+        if obj["nome"] not in resultado:
+            resultado[obj["nome"]] = list()
+        resultado[obj["nome"]].append(valor)
+
+    return resultado

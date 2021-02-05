@@ -6,13 +6,17 @@ from django.db.models import F, Sum
 from django.contrib.auth.models import User
 from django.forms.models import model_to_dict
 
+from django.contrib.auth import login,logout, authenticate
+
 from rest_framework import viewsets
 from rest_framework.response import Response
-from rest_framework import status
+from rest_framework import status, serializers
 from rest_framework.decorators import api_view
 from rest_framework import generics
 from rest_framework.views import APIView
 
+from rest_framework.views import APIView
+import json
 from .models import *
 from .padroes_resposta import *
 from .utils import *
@@ -20,7 +24,27 @@ import json
 from .serializers import *
 
 
+# Views sobre Padrão
 
+class PadraoView(APIView):
+    def post(self,request):
+      serializer= PadraoMovimentacaoSerializer(data=request.data)
+      if serializer.is_valid():
+        serializer.save()
+        return Response(serializer.data,status=status.HTTP_201_CREATED)
+      return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    ###Pegar o codigo do usuario que esta logado
+    def delete(self,request):  
+        # Usuario padrão temporário (até implementado o login)
+        usuario = User.objects.get(username="jv_eumsmo")
+
+        # Filtragem dos padrões do usuário atual
+        query = Movimentacao.objects.filter(cod_usuario=usuario)
+
+        count = PadraoMovimentacao.objects.filter(cod_usuario=usuario).delete()
+        return Response(status= HTTP_200_OK)
+        
 class PadroesView(APIView):
     def get(self, request):
         VALORES_VALIDOS_TIPO = ["receita", "despesa"]
@@ -46,9 +70,11 @@ class PadroesView(APIView):
         lista = list(lista)
 
         return RespostaLista(200, lista)
+    
 
+# Views sobre Movimentação
 
-class InfoMovimentacao(APIView):
+class InfoMovimentacaoView(APIView):
     def get(self, request, id):
 
         #Pegando o nome do usuário que nesse caso é o Juan (usuario padrão no momento)
@@ -70,7 +96,6 @@ class InfoMovimentacao(APIView):
             return RespostaStatus(404, "Movimentação Inexistente!")
 
         return RespostaConteudo(200, info_mov[0])
-
 
 class MovimentacaoSimplesView(APIView):
     def get(self, request):
@@ -128,18 +153,27 @@ class MovimentacaoSimplesView(APIView):
         else:
             return RespostaLista(200, list(lista))
 
-class StatusServidorView(APIView):
-    def get(self, request):
-        return RespostaStatus(200, "Requisição feita com sucesso!")
+class InsereMovimentacaoView(APIView):
+
+    def post(self,request):
     
-    def post(self, request):
+        usuario = User.objects.get(username="jv_eumsmo") 
 
-        if request.body:
-            json_data = json.loads(request.body)
-            for something in json_data:
-                print(something, json_data[something])
+        json_data = json.loads(request.body)
 
-        return RespostaStatus(200, "Requisição POST feita com sucesso!")
+        descricao = json_data["descricao"]
+        valor_esperado = json_data["valor_esperado"]
+        valor_pago = json_data["valor_pago"]
+        data_geracao = json_data["data_geracao"]
+        data_lancamento  = json_data["data_lancamento"]
+
+        label = Movimentacao.objects.create(description=descricao, valor_esperado=valor_esperado,valor_pago=valor_pago,
+        data_geracao=data_geracao,data_lancamento=data_lancamento, cod_usuario=usuario, categoria=F("cod_categoria__nome"), cod_padrao=0)
+
+        return RespostaConteudo(200, label)
+
+
+# Views sobre Saldo
 
 class SaldoView(APIView):
     def get(self, request):
@@ -186,6 +220,54 @@ class SaldoView(APIView):
         })
 
 
+# Views sobre Categoria
+
+class CategoriaView(APIView):
+    """docstring for CategoriaView"""
+    def get(self, request):
+        query = Categoria.objects.all()
+        '''if "categoria" in request.GET:
+            nome_categoria = request.GET["categoria"]
+            query = query.filter(cod_categoria__nome=nome_categoria)
+        '''
+        lista = query.values_list("nome", flat=True)
+        lista = list(lista)
+
+        return RespostaLista(200, lista)
+
+
+# Views relacionadas ao Login
+
+class CadastrarUsuarioView(APIView):
+    def post (self,request):
+        def post (self,request):
+        try:   
+            json_data = json.loads(request.body)
+            nome = json_data['nome']
+            email=json_data['email']
+            senha = json_data['senha']
+            aux_usuario=User.objects.get(email=email)
+            if aux_usuario:
+                return render(request,"Erro! Usario já cadastrado")
+        except User.DoesNotExist:
+            json_data = json.loads(request.body)
+        
+            nome = json_data['nome']
+            email=json_data['email']
+            senha = json_data['senha']
+            novo_usuario = User.objects.create_user(username=nome,email=email,password=senha)
+            novo_usuario.save()
+            return RespostaStatus(200, "Requisição feita com sucesso!")        
+
+class UsuarioLogadoView(APIView):
+    def get(self,request):
+        username = None
+        if request.user.is_authenticated:
+            username = request.user.get_username()
+            return RespostaStatus(200, username)  
+        else:
+            return RespostaStatus(200, "Senha ou usuario invalidos ")
+
 class InformacoesUsuarioView(APIView):
     def get(self, request):
         # Usuario padrão temporário (até implementado o login)
@@ -199,47 +281,64 @@ class InformacoesUsuarioView(APIView):
             "saldo": round(saldo_total, 2),
         })
 
+class LoginView(APIView):#Por enquanto somente o do juan 
+    def post(self,request):
+        json_data = json.loads(request.body)
+        email=json_data['email']
+        senha = json_data['senha']
+        Usuario= User.objects.get(email=email)
+        nome =Usuario.get_username()
+        user = authenticate(request, username=nome, password=senha)
+        
+        
+       # nomeUsuario= User.objects.get_username()
+        if user is not None:
+            login(request, user)
+            return RespostaStatus(200, "Requisição feita com sucesso!")
+        else:
+            return RespostaStatus(200, "Senha ou usuario invalidos ")    
+
+class LogoutView(APIView):         
+    def get(self,request):
+        logout(request)
+        return RespostaStatus(200, "Requisição feita com sucesso!")
 
 class Insere_Mov(APIView):
 
-    def post(self,request):
+    usuario = User.objects.get(username="jv_eumsmo")
     
-        usuario = User.objects.get(username="jv_eumsmo") 
+    descricao = json_data["descricao"]
+    valor_esperado = json_data["valor_esperado"]
+    valor_pago = json_data["valor_pago"]
+    data_geracao = json_data["data_geracao"]
+    data_lancamento  = json_data["data_lancamento"]
+    categoria = json_data["categoria"]
 
-        json_data = json.loads(request.body)
+    if Categoria.objects.filter(nome=categoria).exists():
 
-        descricao = json_data["descricao"]
-        valor_esperado = json_data["valor_esperado"]
-        valor_pago = json_data["valor_pago"]
-        data_geracao = json_data["data_geracao"]
-        data_lancamento  = json_data["data_lancamento"]
-        categoria = json_data["categoria"]
+        label = Movimentacao.objects.create(descricao=descricao, valor_esperado=valor_esperado,valor_pago=valor_pago,
+        data_geracao=data_geracao,data_lancamento=data_lancamento, cod_usuario=usuario,cod_categoria=Categoria.objects.get(nome=categoria), cod_padrao=None)
 
-        if Categoria.objects.filter(nome=categoria).exists():
-            print("FUNCIONA MERDA")
+        return RespostaConteudo(200, model_to_dict(label))
 
+    else:
+        sreturn RespostaStatus(404, "Categoria Inexistente!")
 
-            label = Movimentacao.objects.create(descricao=descricao, valor_esperado=valor_esperado,valor_pago=valor_pago,
-            data_geracao=data_geracao,data_lancamento=data_lancamento, cod_usuario=usuario,cod_categoria=Categoria.objects.get(nome=categoria), cod_padrao=None)
+# Misc Views
 
-            return RespostaConteudo(200, model_to_dict(label))
-
-        else:
-            return RespostaStatus(404, "Categoria Inexistente!")
-
-
-class CategoriaView(APIView):
-    """docstring for CategoriaView"""
+class StatusServidorView(APIView):
     def get(self, request):
-        query = Categoria.objects.all()
-        '''if "categoria" in request.GET:
-            nome_categoria = request.GET["categoria"]
-            query = query.filter(cod_categoria__nome=nome_categoria)
-        '''
-        lista = query.values("nome")
-        lista = list(lista)
+        return RespostaStatus(200, "Requisição feita com sucesso!")
+    
+    def post(self, request):
 
-        return RespostaLista(200, lista)
+        if request.body:
+            json_data = json.loads(request.body)
+            for something in json_data:
+                print(something, json_data[something])
+
+        return RespostaStatus(200, "Requisição POST feita com sucesso!")
+
 
 class InserirPadrao(generics.ListCreateAPIView):
    queryset = PadraoMovimentacao.objects.all()

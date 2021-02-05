@@ -7,12 +7,17 @@ class Saldo(models.Model):
     mes_ano = models.DateField()
     saldo = models.DecimalField(max_digits=10, decimal_places=2)
 
+    def __str__(self):
+        return "["+str(self.mes_ano.month)+"/"+str(self.mes_ano.year)+"] - ("+str(self.saldo)+")" 
+
 class Categoria(models.Model):
     nome = models.CharField(max_length=20)
+    def __str__(self):
+        return self.nome 
 
 
 class PadraoMovimentacao(models.Model):
-    TIPO_MOVIMENTACAO = (("receita","receita"),("despesa","despesa"))
+    TIPO_MOVIMENTACAO = (("receita","receita"),("despesa","despesa"),("divida","divida"))
     
     receita_despesa = models.CharField(max_length=7, choices=TIPO_MOVIMENTACAO)
     descricao = models.TextField(null=True, blank=True)
@@ -40,3 +45,18 @@ class Movimentacao(models.Model):
     def __str__(self):
         return self.descricao 
 
+class Divida(models.Model):
+
+    TIPOS_DE_JUROS=(("composto","composto"),("simples","simples"))
+
+    credor = models.CharField(max_length=40, null=True, blank=True)
+    valor_pago= models.DecimalField(max_digits=9, decimal_places=2, null=True, blank=True)
+    valor_divida= models.DecimalField(max_digits=9, decimal_places=2, null=True, blank=True)
+    juros= models.DecimalField(max_digits=9, decimal_places=2, null=True, blank=True)
+    juros_tipo=models.CharField(max_length=8, choices=TIPOS_DE_JUROS)
+    juros_ativos= models.BooleanField(default=False)
+    cod_padrao = models.ForeignKey(PadraoMovimentacao, on_delete=models.CASCADE, blank=True, null=True)
+
+
+    def __str__(self):
+        return self.credor 
