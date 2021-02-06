@@ -179,8 +179,7 @@ def grafico_anual_despesa(usuario):
     return resultado
 def grafico_anual_saldo(usuario):
     usuario = User.objects.get(username="jv_eumsmo")
-    hoje=datetime.strptime("2020-09-10", '%Y-%m-%d')
-    periodo="anual"
+    hoje = datetime.strptime("2020-09-10", '%Y-%m-%d')
     ano= hoje.year
     query = Saldo.objects.filter(cod_usuario=usuario,mes_ano__year=ano)
     query= query.annotate(mes=Extract("mes_ano","month")).annotate(ano=Extract("mes_ano","year")).values("saldo","mes","ano")
@@ -197,4 +196,37 @@ def grafico_anual_saldo(usuario):
         
     return resultado
     
+def grafico_mensal_despesa(usuario):
+    #dia e quantidade de despesas 
+    usuario= User.objects.get(username="jv_eumsmo")
+    hoje= get_hoje()
+    mes_atual= hoje.month
+    resultado = []
 
+    query = Movimentacao.objects.filter(cod_usuario=usuario, data_lancamento__month=mes_atual)#filtrando movimentações relizadas no mes atual
+    query = query.filter( valor_pago__isnull=False, valor_pago__lt=0)#filtrando despesas 
+    query = query.annotate(dia=Extract("data_lancamento","day")).annotate(mes=Extract("data_lancamento","month"))
+    query = query.values("dia","mes","data_lancamento")
+   
+    quantidade_de_despesas=[]
+    dias_do_mes=[]
+    queryLista = list(query)
+
+    for obj in queryLista:#removendo dias duplicados
+        if obj not in dias_do_mes:
+            dias_do_mes.append(obj) 
+    
+    for obj in dias_do_mes:#contagem de despesas pagas  por dia
+        qtd_aux=len(query.filter(data_lancamento__day=obj["dia"]))
+        qtd_aux2={"quantidade": qtd_aux}
+        quantidade_de_despesas.append(qtd_aux2)
+    
+
+    #formatação resposta
+    for (d,q) in zip(dias_do_mes, quantidade_de_despesas):
+        qtd= {"data":d["data_lancamento"],"quantidade":q["quantidade"]}
+        resultado.append(qtd)
+    return resultado
+    
+    
+    

@@ -1,6 +1,14 @@
 from datetime import datetime, timedelta
 from serase_app.padroes_resposta import RespostaAtributoInvalido
 
+
+def remove_repetidos(lista):
+    l = []
+    for i in lista:
+        if i not in l:
+            l.append(i)
+    l.sort()
+    return l    
 def get_hoje():
     return datetime.strptime("2020-09-10", '%Y-%m-%d')#datetime.today()
 
