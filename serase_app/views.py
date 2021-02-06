@@ -354,7 +354,7 @@ class AtualizaMovimentação(APIView):
 
         usuario = User.objects.get(username="jv_eumsmo") 
 
-        info = Movimentacao.objects.filter(cod_usuario=usuario,id=id)
+        #info = Movimentacao.objects.filter(cod_usuario=usuario,id=id)
 
         json_data = json.loads(request.body)
 
@@ -365,11 +365,9 @@ class AtualizaMovimentação(APIView):
         data_lancamento  = json_data["data_lancamento"]
         categoria = json_data["categoria"]
 
-        mov_att = Movimentacao(descricao=descricao, valor_esperado=valor_esperado,valor_pago=valor_pago,
+        mov_att = Movimentacao(id=id, descricao=descricao, valor_esperado=valor_esperado,valor_pago=valor_pago,
         data_geracao=data_geracao,data_lancamento=data_lancamento, cod_usuario=usuario,cod_categoria=Categoria.objects.get(nome=categoria), cod_padrao=None)
 
-        model_to_dict(mov_att)
         mov_att.save()
-
-        return RespostaConteudo(200, mov_att)
+        return RespostaConteudo(200,model_to_dict(mov_att))
 
