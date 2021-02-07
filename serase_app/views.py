@@ -170,7 +170,18 @@ class InsereMovimentacaoView(APIView):
         data_geracao=data_geracao,data_lancamento=data_lancamento, cod_usuario=usuario, categoria=F("cod_categoria__nome"), cod_padrao=0)
 
         return RespostaConteudo(200, label)
+class DeletaMovimentacaoView(APIView):
+    def delete(self, request):
+        usuario= User.objects.get(username="jv_eumsmo")
+        json_data= json.loads(request.body)
+        id_movimentacao = json_data["id"]  
 
+        query = Movimentacao.objects.filter(cod_usuario=usuario,id=id_movimentacao)
+        if query:
+            query.delete()
+            return RespostaStatus(200,"Movimentacao Deletada")             
+        else:    
+            return RespostaStatus(400,"Erro! Esse id não existe")        
 
 # Views sobre Saldo
 

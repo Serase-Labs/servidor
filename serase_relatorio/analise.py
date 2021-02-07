@@ -218,7 +218,7 @@ def grafico_mensal_despesa(usuario):
     
     for obj in dias_do_mes:#contagem de despesas pagas  por dia
         qtd_aux=len(query.filter(data_lancamento__day=obj["dia"]))
-        qtd_aux2={"quantidade": qtd_aux}
+        qtd_aux2={"quantidade":qtd_aux}
         quantidade_de_despesas.append(qtd_aux2)
     
 
