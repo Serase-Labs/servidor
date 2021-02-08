@@ -26,6 +26,10 @@ from .serializers import *
 
 # Views sobre Padrão
 
+class InserirPadrao(generics.ListCreateAPIView):
+   queryset = PadraoMovimentacao.objects.all()
+   serializer_class = PadraoMovimentacaoSerializer
+
 class PadraoView(APIView):
     def post(self,request):
       serializer= PadraoMovimentacaoSerializer(data=request.data)
@@ -185,8 +189,7 @@ class DeletaMovimentacaoView(APIView):
             query.delete()
             return RespostaStatus(200,"Movimentacao Deletada")             
         else:    
-            return RespostaStatus(400,"Erro! Esse id não existe")        
-            
+            return RespostaStatus(400,"Erro! Esse id não existe")         
 
 
 # Views sobre Saldo
@@ -311,12 +314,6 @@ class StatusServidorView(APIView):
                 print(something, json_data[something])
 
         return RespostaStatus(200, "Requisição POST feita com sucesso!")
-
-
-class InserirPadrao(generics.ListCreateAPIView):
-   queryset = PadraoMovimentacao.objects.all()
-   serializer_class = PadraoMovimentacaoSerializer
-
 
 class AtualizaMovimentação(APIView):
 
