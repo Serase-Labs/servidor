@@ -1,11 +1,13 @@
 from django.db import models
 from django.contrib.auth.models import User
+from datetime import datetime
+from decimal import Decimal
 
 # Create your models here.
 class Saldo(models.Model):
     cod_usuario = models.ForeignKey(User, on_delete=models.CASCADE)
     mes_ano = models.DateField()
-    saldo = models.DecimalField(max_digits=10, decimal_places=2)
+    saldo = models.DecimalField(max_digits=10, decimal_places=2, default=Decimal('0.00'))
 
     def __str__(self):
         return "["+str(self.mes_ano.month)+"/"+str(self.mes_ano.year)+"] - ("+str(self.saldo)+")" 
@@ -41,6 +43,31 @@ class Movimentacao(models.Model):
     cod_usuario = models.ForeignKey(User, on_delete=models.CASCADE)
     cod_categoria = models.ForeignKey(Categoria, on_delete=models.CASCADE)
     cod_padrao = models.ForeignKey(PadraoMovimentacao, on_delete=models.CASCADE, blank=True, null=True)
+
+    def save(self,*args,**kwargs):
+        old = Movimentacao.objects.filter(pk=getattr(self,"pk",None)).first()
+        if old:
+            if old.data_lancamento!=self.data_lancamento:
+                new_date = datetime(year=self.data_lancamento.year, month=self.data_lancamento.month, day=1)
+                saldo_old = Saldo.objects.get(cod_usuario=self.cod_usuario,mes_ano__month=old.data_lancamento.month, mes_ano__year=old.data_lancamento.year)
+                saldo_new, c = Saldo.objects.get_or_create(cod_usuario=self.cod_usuario,mes_ano=new_date)
+                saldo_old.saldo-=old.valor_pago
+                saldo_new.saldo+=self.valor_pago
+                
+                Saldo.objects.bulk_update([saldo_old, saldo_new], ["saldo"])
+            elif old.valor_pago!=self.valor_pago:
+                diferenca = self.valor_pago - old.valor_pago
+                saldo = Saldo.objects.get(cod_usuario=self.cod_usuario,mes_ano__month=self.data_lancamento.month, mes_ano__year=self.data_lancamento.year)
+                saldo.saldo+=diferenca
+                saldo.save()
+        else:
+            mes_ano = datetime.strptime(self.data_lancamento, '%Y-%m-%d')
+            mes_ano = mes_ano.replace(day=1)
+            saldo, c = Saldo.objects.get_or_create(cod_usuario=self.cod_usuario, mes_ano=mes_ano)
+            saldo.saldo+=Decimal(self.valor_pago)
+            saldo.save()
+
+        super(Movimentacao,self).save(*args,**kwargs)
 
     def __str__(self):
         return self.descricao 
