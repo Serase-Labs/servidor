@@ -3,13 +3,13 @@ Listagem dos afazeres da primeira entrega do servidor.
 
 ## Geral
 -  Relatório 
-	 - [ ] Definir views do relatório
-	 - [ ] Definir respostas do relatório
-	 - [ ] Criar app no Django para o relatório
-	 - [ ] Implementar views do relatório
+	- [x] Definir views do relatório
+	- [x] Definir respostas do relatório
+	- [x] Criar app no Django para o relatório
+	- [x] Implementar views do relatório
 - Login (pra depois)
-	- [ ] Pesquisar sobre implementação com Ajax
-	- [ ] Implementar de fato
+	- [x] Pesquisar sobre implementação com Ajax
+	- [x] Implementar de fato
 	- [ ] Ajustar views
 - Modo de usos
 	- [ ] Saber o que fazer com dívidas/metas
@@ -20,24 +20,25 @@ Listagem dos afazeres da primeira entrega do servidor.
 	- [ ] Checar se a cobrança do padrão foi paga
 - Saldo
 	- [X] Implementar views visualizar saldo geral
-	- [ ] Descobrir como gerar o Saldo todo mês (pra depois, com o login)
-	- [ ] Implementar geração de Saldo todo começo de mês
+	- [ ] ~~Descobrir como gerar o Saldo todo mês (pra depois, com o login)~~
+	- [ ] ~~Implementar geração de Saldo todo começo de mês~~
+	- [x] Saldo é gerado/adicionado a partir da criação de uma movimentação
 - Notificações
 	- [ ] O que vamos fazer com as notificações?
 	
 ## Views
 - View Padrão de Movimentação
 	- [x] Consultar
-	- [ ] Inserir
-	- [ ] Atualizar
-	- [ ] Deletar
+	- [x] Inserir
+	- [?] Atualizar
+	- [x] Deletar
 - View Movimentação
 	- [x] Consultar
-	- [ ] Inserir
+	- [x] Inserir
 	- [ ] Atualizar
 	- [ ] Deletar 
 - View Categoria
-	- [ ] Consultar
+	- [x] Consultar
 - View Listar Movimentações
 	- [x] Paginação 
 	- [x] Filtrar por despesa/receita/ambos  
@@ -46,6 +47,6 @@ Listagem dos afazeres da primeira entrega do servidor.
 - View Consultar Saldo
 	- [ ] ~~Filtrar período~~
 	- [x] Consultar um mês-ano
-	- [ ] Gerar saldo caso não exista
+	- [x] Gerar saldo caso não exista
 - View Consultar Usuário
-	- [ ] Implementação da view
+	- [x] Implementação da view
