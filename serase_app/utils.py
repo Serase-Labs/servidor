@@ -34,22 +34,6 @@ def mes_ano_atual():
 
     return datetime.today()
 
-def is_mes_ano_igual(mes_ano1, mes_ano2):
-    """
-        Retorna True se o mes e o ano das datas passadas forem iguais.
-    """
-
-    return mes_ano1.year==mes_ano2.year and mes_ano1.month==mes_ano2.month
-
-def mes_passado(data):
-    """
-        Subtrai um mês da data passada por parâmetro.
-    """
-    dia = data.day
-    data = data.replace(day=1) - timedelta(days=1)
-    data = data.replace(day=dia)
-    return data
-
 # Outras
 
 def paginacao(request, lista):
@@ -99,22 +83,15 @@ def paginacao(request, lista):
 
 
 def calcular_saldo(usuario, mes_ano=mes_ano_atual(), hoje=mes_ano_atual()):
-    saldo_mes = None
-    saldo_total = None
-
     query_saldo = Saldo.objects.filter(cod_usuario=usuario)
     
-    if is_mes_ano_igual(mes_ano, hoje):
-        # Calcula saldo caso mês seja o mês atual, uma vez que não existe um objeto Saldo
-        query_movimentacao = Movimentacao.objects.filter(cod_usuario=usuario, valor_pago__isnull=False)
-        query_movimentacao = query_movimentacao.filter(data_lancamento__year=mes_ano.year, data_lancamento__month=mes_ano.month)
-        saldo_mes = query_movimentacao.aggregate(Sum("valor_pago"))["valor_pago__sum"] or 0
+    query_mes = query_saldo.filter(mes_ano__month=mes_ano.month, mes_ano__year=mes_ano.year)
+    if query_mes.exists():
+        saldo_mes = query_mes.first().saldo
     else:
-        saldo = query_saldo.get(mes_ano__month=mes_ano.month, mes_ano__year=mes_ano.year)
-        saldo_mes = saldo.saldo
+        saldo_mes = 0.0
 
-    query_saldo = query_saldo.filter(mes_ano__lt=mes_ano.replace(day=1))
+    query_saldo = query_saldo.filter(mes_ano__lte=mes_ano)
     saldo_total = query_saldo.aggregate(Sum("saldo"))["saldo__sum"] or 0
-    saldo_total += saldo_mes
 
     return saldo_mes, saldo_total
