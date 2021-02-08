@@ -180,17 +180,11 @@ class InsereMovimentacaoView(APIView):
 class SaldoView(APIView):
     def get(self, request):
         hoje = mes_ano_atual()
-
+        mes_ano = hoje
+        
         # Usuario padrão temporário (até implementado o login)
         usuario = User.objects.get(username="jv_eumsmo")
 
-        # Filtragem dos padrões do usuário atual
-        query_saldo = Saldo.objects.filter(cod_usuario=usuario)
-
-
-        saldo_mes = None
-        saldo_total = None
-        mes_ano = None
 
         # Filtragem por mes_ano
         if "mes_ano" in request.GET:
@@ -203,17 +197,8 @@ class SaldoView(APIView):
                 return RespostaStatus(500, "Mês/ano deve ser menor ou igual ao da data atual!")
 
 
-        if mes_ano==None:
-            mes_ano = hoje
-        
+
         saldo_mes, saldo_total = calcular_saldo(usuario, mes_ano, hoje)
-        
-        # Filtra por saldos anteriores ao mes_ano
-        query_saldo = query_saldo.filter(mes_ano__lt=mes_ano.replace(day=1))
-        saldo_total = query_saldo.aggregate(Sum("saldo"))["saldo__sum"] or 0
-
-        saldo_total+=saldo_mes
-
 
         return RespostaConteudo(200, {
             "mes_ano": mes_ano.strftime("%Y-%m"),
