@@ -157,6 +157,8 @@ class InsereMovimentacaoView(APIView):
     def post(self, request):
         usuario = User.objects.get(username="jv_eumsmo")
         
+        json_data = json.loads(request.body)
+
         descricao = json_data["descricao"]
         valor_esperado = json_data["valor_esperado"]
         valor_pago = json_data["valor_pago"]
@@ -165,9 +167,13 @@ class InsereMovimentacaoView(APIView):
         categoria = json_data["categoria"]
 
         if Categoria.objects.filter(nome=categoria).exists():
+            label = Movimentacao.objects.create(descricao=descricao, valor_esperado=valor_esperado,valor_pago=valor_pago,
+            data_geracao=data_geracao,data_lancamento=data_lancamento, cod_usuario=usuario,cod_categoria=Categoria.objects.get(nome=categoria), cod_padrao=None)
 
-<<<<<<< HEAD
-        return RespostaConteudo(200, label)
+            return RespostaConteudo(200, model_to_dict(label))
+        else:
+            return RespostaStatus(404, "Categoria Inexistente!")
+
 class DeletaMovimentacaoView(APIView):
     def delete(self, request):
         usuario= User.objects.get(username="jv_eumsmo")
@@ -180,16 +186,8 @@ class DeletaMovimentacaoView(APIView):
             return RespostaStatus(200,"Movimentacao Deletada")             
         else:    
             return RespostaStatus(400,"Erro! Esse id não existe")        
-=======
-            label = Movimentacao.objects.create(descricao=descricao, valor_esperado=valor_esperado,valor_pago=valor_pago,
-            data_geracao=data_geracao,data_lancamento=data_lancamento, cod_usuario=usuario,cod_categoria=Categoria.objects.get(nome=categoria), cod_padrao=None)
+            
 
-            return RespostaConteudo(200, model_to_dict(label))
-
-        else:
-            return RespostaStatus(404, "Categoria Inexistente!")
-
->>>>>>> dev
 
 # Views sobre Saldo
 
@@ -242,7 +240,6 @@ class CategoriaView(APIView):
 # Views relacionadas ao Login
 
 class CadastrarUsuarioView(APIView):
-<<<<<<< HEAD
     def post (self,request): 
         json_data = json.loads(request.body)
         nome = json_data['nome']
@@ -254,26 +251,6 @@ class CadastrarUsuarioView(APIView):
         novo_usuario = User.objects.create_user(username=nome,email=email,password=senha)
         novo_usuario.save()
         return RespostaStatus(200, "Requisição feita com sucesso!")        
-=======
-    def post (self,request):
-        try:   
-            json_data = json.loads(request.body)
-            nome = json_data['nome']
-            email=json_data['email']
-            senha = json_data['senha']
-            aux_usuario=User.objects.get(email=email)
-            if aux_usuario:
-                return render(request,"Erro! Usario já cadastrado")
-        except User.DoesNotExist:
-            json_data = json.loads(request.body)
-        
-            nome = json_data['nome']
-            email=json_data['email']
-            senha = json_data['senha']
-            novo_usuario = User.objects.create_user(username=nome,email=email,password=senha)
-            novo_usuario.save()
-            return RespostaStatus(200, "Requisição feita com sucesso!")        
->>>>>>> dev
 
 class UsuarioLogadoView(APIView):
     def get(self,request):
@@ -319,26 +296,6 @@ class LogoutView(APIView):
         logout(request)
         return RespostaStatus(200, "Requisição feita com sucesso!")
 
-
-class Insere_Mov(APIView):
-    def post(self, request):
-        usuario = User.objects.get(username="jv_eumsmo")
-        
-        descricao = json_data["descricao"]
-        valor_esperado = json_data["valor_esperado"]
-        valor_pago = json_data["valor_pago"]
-        data_geracao = json_data["data_geracao"]
-        data_lancamento  = json_data["data_lancamento"]
-        categoria = json_data["categoria"]
-        if Categoria.objects.filter(nome=categoria).exists():
-
-            label = Movimentacao.objects.create(descricao=descricao, valor_esperado=valor_esperado,valor_pago=valor_pago,
-            data_geracao=data_geracao,data_lancamento=data_lancamento, cod_usuario=usuario,cod_categoria=Categoria.objects.get(nome=categoria), cod_padrao=None)
-
-            return RespostaConteudo(200, model_to_dict(label))
-
-        else:
-            return RespostaStatus(404, "Categoria Inexistente!")
 
 # Misc Views
 
