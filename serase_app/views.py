@@ -154,23 +154,25 @@ class MovimentacaoSimplesView(APIView):
             return RespostaLista(200, list(lista))
 
 class InsereMovimentacaoView(APIView):
-
-    def post(self,request):
-    
-        usuario = User.objects.get(username="jv_eumsmo") 
-
-        json_data = json.loads(request.body)
-
+    def post(self, request):
+        usuario = User.objects.get(username="jv_eumsmo")
+        
         descricao = json_data["descricao"]
         valor_esperado = json_data["valor_esperado"]
         valor_pago = json_data["valor_pago"]
         data_geracao = json_data["data_geracao"]
         data_lancamento  = json_data["data_lancamento"]
+        categoria = json_data["categoria"]
 
-        label = Movimentacao.objects.create(description=descricao, valor_esperado=valor_esperado,valor_pago=valor_pago,
-        data_geracao=data_geracao,data_lancamento=data_lancamento, cod_usuario=usuario, categoria=F("cod_categoria__nome"), cod_padrao=0)
+        if Categoria.objects.filter(nome=categoria).exists():
 
-        return RespostaConteudo(200, label)
+            label = Movimentacao.objects.create(descricao=descricao, valor_esperado=valor_esperado,valor_pago=valor_pago,
+            data_geracao=data_geracao,data_lancamento=data_lancamento, cod_usuario=usuario,cod_categoria=Categoria.objects.get(nome=categoria), cod_padrao=None)
+
+            return RespostaConteudo(200, model_to_dict(label))
+
+        else:
+            return RespostaStatus(404, "Categoria Inexistente!")
 
 
 # Views sobre Saldo
@@ -178,17 +180,11 @@ class InsereMovimentacaoView(APIView):
 class SaldoView(APIView):
     def get(self, request):
         hoje = mes_ano_atual()
-
+        mes_ano = hoje
+        
         # Usuario padrão temporário (até implementado o login)
         usuario = User.objects.get(username="jv_eumsmo")
 
-        # Filtragem dos padrões do usuário atual
-        query_saldo = Saldo.objects.filter(cod_usuario=usuario)
-
-
-        saldo_mes = None
-        saldo_total = None
-        mes_ano = None
 
         # Filtragem por mes_ano
         if "mes_ano" in request.GET:
@@ -201,17 +197,8 @@ class SaldoView(APIView):
                 return RespostaStatus(500, "Mês/ano deve ser menor ou igual ao da data atual!")
 
 
-        if mes_ano==None:
-            mes_ano = hoje
-        
+
         saldo_mes, saldo_total = calcular_saldo(usuario, mes_ano, hoje)
-        
-        # Filtra por saldos anteriores ao mes_ano
-        query_saldo = query_saldo.filter(mes_ano__lt=mes_ano.replace(day=1))
-        saldo_total = query_saldo.aggregate(Sum("saldo"))["saldo__sum"] or 0
-
-        saldo_total+=saldo_mes
-
 
         return RespostaConteudo(200, {
             "mes_ano": mes_ano.strftime("%Y-%m"),
@@ -302,6 +289,7 @@ class LogoutView(APIView):
         logout(request)
         return RespostaStatus(200, "Requisição feita com sucesso!")
 
+
 class Insere_Mov(APIView):
     def post(self, request):
         usuario = User.objects.get(username="jv_eumsmo")
@@ -312,7 +300,6 @@ class Insere_Mov(APIView):
         data_geracao = json_data["data_geracao"]
         data_lancamento  = json_data["data_lancamento"]
         categoria = json_data["categoria"]
-
         if Categoria.objects.filter(nome=categoria).exists():
 
             label = Movimentacao.objects.create(descricao=descricao, valor_esperado=valor_esperado,valor_pago=valor_pago,
