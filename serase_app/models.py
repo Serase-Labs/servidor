@@ -1,5 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import User
+from django.db.models.signals import pre_delete
+
 from datetime import datetime
 from decimal import Decimal
 
@@ -45,6 +47,11 @@ class Movimentacao(models.Model):
     cod_padrao = models.ForeignKey(PadraoMovimentacao, on_delete=models.CASCADE, blank=True, null=True)
 
     def save(self,*args,**kwargs):
+        """
+        Chamada no ato de salvar uma instancia no BD.
+        Compara valores anteriores de valor e data e altera o saldo.
+        """
+
         old = Movimentacao.objects.filter(pk=getattr(self,"pk",None)).first()
         if old:
             if old.data_lancamento!=self.data_lancamento:
@@ -68,9 +75,24 @@ class Movimentacao(models.Model):
             saldo.save()
 
         super(Movimentacao,self).save(*args,**kwargs)
+    
+    @staticmethod
+    def pre_delete(sender, **kwargs):
+        """ 
+        Chamada antes de uma movimentação ser deletada.
+        Subtrai seu valor no objeto saldo.
+        """
+        
+        instance = kwargs.get('instance')
+        epoca = instance.data_lancamento
+        saldo = Saldo.objects.get(cod_usuario=instance.cod_usuario,mes_ano__month=epoca.month, mes_ano__year=epoca.year)
+        saldo.saldo -= instance.valor_pago
+        saldo.save()
 
     def __str__(self):
-        return self.descricao 
+        return self.descricao
+
+pre_delete.connect(Movimentacao.pre_delete, sender=Movimentacao)
 
 class Divida(models.Model):
 
