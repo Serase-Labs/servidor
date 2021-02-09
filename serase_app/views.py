@@ -161,16 +161,12 @@ class InsereMovimentacaoView(APIView):
         json_data = json.loads(request.body)
 
         descricao = json_data["descricao"]
-        valor_esperado = json_data["valor_esperado"]
         valor_pago = json_data["valor_pago"]
-        data_geracao = json_data["data_geracao"]
         data_lancamento  = json_data["data_lancamento"]
         categoria = json_data["categoria"]
 
         if Categoria.objects.filter(nome=categoria).exists():
-            label = Movimentacao.objects.create(descricao=descricao, valor_esperado=valor_esperado,valor_pago=valor_pago,
-            data_geracao=data_geracao,data_lancamento=data_lancamento, cod_usuario=usuario,cod_categoria=Categoria.objects.get(nome=categoria), cod_padrao=None)
-
+            label = Movimentacao.objects.create(descricao=descricao, valor_pago=valor_pago, data_lancamento=data_lancamento, cod_usuario=usuario,cod_categoria=Categoria.objects.get(nome=categoria), cod_padrao=None)
             return RespostaConteudo(200, model_to_dict(label))
         else:
             return RespostaStatus(404, "Categoria Inexistente!")
@@ -294,27 +290,6 @@ class LogoutView(APIView):
         logout(request)
         return RespostaStatus(200, "Requisição feita com sucesso!")
 
-class InsereMovimentacaoView(APIView):
-
-    def post(self,request):
-    
-        usuario = User.objects.get(username="jv_eumsmo") 
-
-        json_data = json.loads(request.body)
-
-        descricao = json_data["descricao"]
-        valor_pago = json_data["valor_pago"]
-        data_lancamento  = json_data["data_lancamento"]
-        categoria = json_data["categoria"]
-
-        if Categoria.objects.filter(nome=categoria).exists():
-         
-            label = Movimentacao.objects.create(descricao=descricao, valor_pago=valor_pago, data_lancamento=data_lancamento, cod_usuario=usuario,cod_categoria=Categoria.objects.get(nome=categoria), cod_padrao=None)
-
-            return RespostaConteudo(200, model_to_dict(label))
-
-        else:
-            return RespostaStatus(404, "Categoria Inexistente!")
 
 # Misc Views
 
