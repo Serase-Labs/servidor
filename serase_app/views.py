@@ -41,7 +41,7 @@ class PadraoView(APIView):
     ###Pegar o codigo do usuario que esta logado
     def delete(self,request):  
         # Usuario padrão temporário (até implementado o login)
-        usuario = User.objects.get(username="jv_eumsmo")
+        usuario = request.user
 
         # Filtragem dos padrões do usuário atual
         query = Movimentacao.objects.filter(cod_usuario=usuario)
@@ -54,7 +54,7 @@ class PadroesView(APIView):
         VALORES_VALIDOS_TIPO = ["receita", "despesa"]
 
         # Usuario padrão temporário (até implementado o login)
-        usuario = User.objects.get(username="jv_eumsmo")
+        usuario = request.user
 
         # Filtragem dos padrões do usuário atual
         query = PadraoMovimentacao.objects.filter(cod_usuario=usuario)
@@ -82,8 +82,7 @@ class InfoMovimentacaoView(APIView):
     def get(self, request, id):
 
         #Pegando o nome do usuário que nesse caso é o Juan (usuario padrão no momento)
-        usuario = User.objects.get(username="jv_eumsmo")
-
+        usuario = request.user
         #Filtrando movimentacao e usuario = pegando a movimentacao do usuario que ele estiver logado
         info = Movimentacao.objects.filter(cod_usuario=usuario,id=id)
 
@@ -104,8 +103,7 @@ class InfoMovimentacaoView(APIView):
 class MovimentacaoSimplesView(APIView):
     def get(self, request):
         # Usuario padrão temporário (até implementado o login)
-        usuario = User.objects.get(username="jv_eumsmo")
-
+        usuario = request.user
         # Filtragem dos padrões do usuário atual
         query = Movimentacao.objects.filter(cod_usuario=usuario)
 
@@ -159,8 +157,7 @@ class MovimentacaoSimplesView(APIView):
 
 class InsereMovimentacaoView(APIView):
     def post(self, request):
-        usuario = User.objects.get(username="jv_eumsmo")
-        
+        usuario = request.user
         json_data = json.loads(request.body)
 
         descricao = json_data["descricao"]
@@ -180,7 +177,7 @@ class InsereMovimentacaoView(APIView):
 
 class DeletaMovimentacaoView(APIView):
     def delete(self, request):
-        usuario= User.objects.get(username="jv_eumsmo")
+        usuario = request.user
         json_data= json.loads(request.body)
         id_movimentacao = json_data["id"]  
 
@@ -200,8 +197,7 @@ class SaldoView(APIView):
         mes_ano = hoje
         
         # Usuario padrão temporário (até implementado o login)
-        usuario = User.objects.get(username="jv_eumsmo")
-
+        usuario = request.user
 
         # Filtragem por mes_ano
         if "mes_ano" in request.GET:
@@ -267,8 +263,7 @@ class UsuarioLogadoView(APIView):
 class InformacoesUsuarioView(APIView):
     def get(self, request):
         # Usuario padrão temporário (até implementado o login)
-        usuario = User.objects.get(username="jv_eumsmo")
-
+        usuario = request.user
         s, saldo_total = calcular_saldo(usuario)
 
         return RespostaConteudo(200, {
@@ -319,8 +314,7 @@ class AtualizaMovimentação(APIView):
 
     def post(self,request,id):
 
-        usuario = User.objects.get(username="jv_eumsmo") 
-
+        usuario = request.user
         info = Movimentacao.objects.filter(cod_usuario=usuario,id=id)
 
         json_data = json.loads(request.body)

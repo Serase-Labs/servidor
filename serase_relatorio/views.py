@@ -2,6 +2,7 @@ from django.shortcuts import render
 from rest_framework.views import APIView
 
 from serase_app.padroes_resposta import *
+from serase_app.views import UsuarioLogadoView
 from .analise import *
 from .utils import validade_periodo, erro_periodo
 
@@ -14,8 +15,7 @@ class ResumoAnaliseView(APIView):
         if not validade_periodo(periodo):
             return erro_periodo(periodo)
 
-        usuario = User.objects.get(username="jv_eumsmo")
-        
+        usuario = request.user
         resposta = analise_resumo(usuario, periodo)
 
         return RespostaConteudo(200, resposta)
@@ -25,7 +25,7 @@ class CategoriaAnaliseView(APIView):
         if not validade_periodo(periodo):
             return erro_periodo(periodo)
 
-        usuario = User.objects.get(username="jv_eumsmo")
+        usuario = request.user
         
         resposta = analise_categoria(usuario, periodo)
 
@@ -33,7 +33,7 @@ class CategoriaAnaliseView(APIView):
 
 class GraficoSemanalView(APIView):
     def get(self, request):
-        usuario = User.objects.get(username="jv_eumsmo")
+        usuario = request.user
 
         resposta = grafico_semanal(usuario)
 
@@ -44,7 +44,7 @@ class GraficoCategoriaView(APIView):
         if not validade_periodo(periodo):
             return erro_periodo(periodo)
 
-        usuario = User.objects.get(username="jv_eumsmo")
+        usuario = request.user
 
         resposta = grafico_categoria(usuario, periodo)
 
@@ -55,7 +55,7 @@ class GraficoPadraoDespesaView(APIView):
         if not validade_periodo(periodo):
             return erro_periodo(periodo)
 
-        usuario = User.objects.get(username="jv_eumsmo")
+        usuario = request.user
 
         resposta = grafico_padrao_despesa(usuario, periodo)
 
@@ -63,21 +63,22 @@ class GraficoPadraoDespesaView(APIView):
 
 class GraficoAnualDespesaView(APIView):
     def get(self, request):
-        usuario = User.objects.get(username="jv_eumsmo")
+        usuario = request.user
 
         resposta = grafico_anual_despesa(usuario)
 
         return RespostaConteudo(200, resposta)
 class GraficoAnualSaldoView(APIView):
     def get(self,request):
-        usuario = User.objects.get(username="jv_eumsmo")
-
+        usuario = request.user
         resposta = grafico_anual_saldo(usuario)
 
         return RespostaConteudo(200, resposta)
 class GraficoMensalDespesaView(APIView):
     def get(self,request):
-        usuario = User.objects.get(username="jv_eumsmo")
+        
+        usuario = request.user
+        
         resposta= grafico_mensal_despesa(usuario)
         return RespostaConteudo(200, resposta)
                         
@@ -86,7 +87,7 @@ class GraficoMensalDespesaView(APIView):
 
 class RelatorioSemanalView(APIView):
     def get(self, request):
-        usuario = User.objects.get(username="jv_eumsmo")
+        usuario = request.user
         periodo = "semanal"
 
         return RespostaConteudo(200, {
@@ -97,7 +98,7 @@ class RelatorioSemanalView(APIView):
 
 class RelatorioMensalView(APIView):
     def get(self, request):
-        usuario = User.objects.get(username="jv_eumsmo")
+        usuario = request.user
         periodo = "mensal"
 
         return RespostaConteudo(200, {
@@ -107,7 +108,7 @@ class RelatorioMensalView(APIView):
 
 class RelatorioAnualView(APIView):
     def get(self, request):
-        usuario = User.objects.get(username="jv_eumsmo")
+        usuario = request.user
         periodo = "anual"
 
         return RespostaConteudo(200, {
