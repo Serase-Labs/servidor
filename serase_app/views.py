@@ -14,6 +14,7 @@ from rest_framework import status, serializers
 from rest_framework.decorators import api_view
 from rest_framework import generics
 from rest_framework.views import APIView
+from rest_framework.authtoken.models import Token
 
 from rest_framework.views import APIView
 import json
@@ -273,15 +274,16 @@ class LoginView(APIView):#Por enquanto somente o do juan
         json_data = json.loads(request.body)
         email=json_data['email']
         senha = json_data['senha']
-        Usuario= User.objects.get(email=email)
-        nome =Usuario.get_username()
+        usuario= User.objects.get(email=email)
+        nome = usuario.get_username()
         user = authenticate(request, username=nome, password=senha)
         
         
        # nomeUsuario= User.objects.get_username()
         if user is not None:
             login(request, user)
-            return RespostaStatus(200, "Requisição feita com sucesso!")
+            token = Token.objects.get(user=usuario)
+            return RespostaStatus(200, "Token "+str(token))
         else:
             return RespostaStatus(400, "Senha ou usuario invalidos ")    
 

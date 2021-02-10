@@ -41,10 +41,17 @@ INSTALLED_APPS = [
     'serase_app',
     'serase_relatorio',
     'rest_framework',
+    'rest_framework.authtoken',
 ]
 
 CORS_ALLOW_ALL_ORIGINS = True
 CORS_ALLOW_CREDENTIALS = True # Permitir cookies futuramente (caso não seja utilizado, remover)
+
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework.authentication.TokenAuthentication',  # <-- And here
+    ],
+}
 
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
