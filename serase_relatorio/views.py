@@ -114,5 +114,6 @@ class RelatorioAnualView(APIView):
         return RespostaConteudo(200, {
             "resumo": analise_resumo(usuario, periodo),
             "analises": analise_categoria(usuario, periodo),
+            "grafico_saldo": grafico_anual_saldo(usuario),
             "grafico_despesa_fixa": grafico_anual_despesa(usuario),
         })
