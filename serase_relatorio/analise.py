@@ -154,8 +154,6 @@ def grafico_padrao_despesa(usuario, periodo):
     return query
 
 def grafico_anual_despesa(usuario):
-    usuario = usuario
-
     hoje = datetime.strptime("2020-09-10", '%Y-%m-%d')
     periodo = "anual"
     data_inicio, data_fim = calcula_periodo(periodo, hoje)
@@ -177,8 +175,8 @@ def grafico_anual_despesa(usuario):
         resultado[obj["nome"]].append(valor)
 
     return resultado
+
 def grafico_anual_saldo(usuario):
-    usuario = request.user
     hoje = datetime.strptime("2020-09-10", '%Y-%m-%d')
     ano= hoje.year
     query = Saldo.objects.filter(cod_usuario=usuario,mes_ano__year=ano)
@@ -198,7 +196,6 @@ def grafico_anual_saldo(usuario):
     
 def grafico_mensal_despesa(usuario):
     #dia e quantidade de despesas 
-    usuario= usuario
     hoje= get_hoje()
     mes_atual= hoje.month
     resultado = []
@@ -227,6 +224,4 @@ def grafico_mensal_despesa(usuario):
         qtd= {"data":d["data_lancamento"],"quantidade":q["quantidade"]}
         resultado.append(qtd)
     return resultado
-    
-    
     
