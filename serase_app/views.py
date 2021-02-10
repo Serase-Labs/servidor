@@ -170,7 +170,7 @@ class InsereMovimentacaoView(APIView):
             label = Movimentacao.objects.create(descricao=descricao, valor_pago=valor_pago, data_lancamento=data_lancamento, cod_usuario=usuario,cod_categoria=Categoria.objects.get(nome=categoria), cod_padrao=None)
             return RespostaConteudo(200, model_to_dict(label))
         else:
-            return RespostaStatus(404, "Categoria Inexistente!")
+            return RespostaStatus(400, "Categoria Inexistente!")
 
 class DeletaMovimentacaoView(APIView):
     def delete(self, request):
@@ -283,7 +283,12 @@ class LoginView(APIView):#Por enquanto somente o do juan
         if user is not None:
             login(request, user)
             token = Token.objects.get(user=usuario)
-            return RespostaStatus(200, "Token "+str(token))
+
+            return RespostaConteudo(200, {
+                "nome": usuario.get_full_name(),
+                "email": usuario.email,
+                "token": "Token "+str(token),
+            })
         else:
             return RespostaStatus(400, "Senha ou usuario invalidos ")    
 
