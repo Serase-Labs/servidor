@@ -16,6 +16,7 @@ from rest_framework import generics
 from rest_framework.views import APIView
 from rest_framework.authtoken.models import Token
 
+from decimal import Decimal
 from rest_framework.views import APIView
 import json
 from .models import *
@@ -78,28 +79,6 @@ class PadroesView(APIView):
     
 
 # Views sobre Movimentação
-
-class InfoMovimentacaoView(APIView):
-    def get(self, request, id):
-
-        #Pegando o nome do usuário que nesse caso é o Juan (usuario padrão no momento)
-        usuario = request.user
-        #Filtrando movimentacao e usuario = pegando a movimentacao do usuario que ele estiver logado
-        info = Movimentacao.objects.filter(cod_usuario=usuario,id=id)
-
-        #vendo se retorna alguma coisa através do queryset
-        if len(info) > 0 :
-
-            # Converte queryset em uma lista que depois tá retornando só um objeto msm
-            info_mov = info.values("cod_padrao","valor_esperado","valor_pago","data_geracao","data_lancamento","descricao",categoria=F("cod_categoria__nome"))
-            info_mov = list(info_mov)
-
-        #vendo se não retorna nada
-        if len(info) == 0:
-
-            return RespostaStatus(404, "Movimentação Inexistente!")
-
-        return RespostaConteudo(200, info_mov[0])
 
 class MovimentacaoSimplesView(APIView):
     def get(self, request):
@@ -172,11 +151,56 @@ class InsereMovimentacaoView(APIView):
         else:
             return RespostaStatus(400, "Categoria Inexistente!")
 
-class DeletaMovimentacaoView(APIView):
-    def delete(self, request):
+class MovimentacaoView(APIView):
+    def get(self, request, id):
+
+        #Pegando o nome do usuário que nesse caso é o Juan (usuario padrão no momento)
         usuario = request.user
-        json_data= json.loads(request.body)
-        id_movimentacao = json_data["id"]  
+        #Filtrando movimentacao e usuario = pegando a movimentacao do usuario que ele estiver logado
+        info = Movimentacao.objects.filter(cod_usuario=usuario,id=id)
+
+        #vendo se retorna alguma coisa através do queryset
+        if len(info) > 0 :
+
+            # Converte queryset em uma lista que depois tá retornando só um objeto msm
+            info_mov = info.values("cod_padrao","valor_esperado","valor_pago","data_geracao","data_lancamento","descricao",categoria=F("cod_categoria__nome"))
+            info_mov = list(info_mov)
+
+        #vendo se não retorna nada
+        if len(info) == 0:
+
+            return RespostaStatus(404, "Movimentação Inexistente!")
+
+        return RespostaConteudo(200, info_mov[0])
+    
+    def put(self,request,id):
+
+        usuario = request.user
+        info = Movimentacao.objects.filter(cod_usuario=usuario,id=id)
+
+        json_data = json.loads(request.body)
+
+        descricao = json_data["descricao"]
+        valor_pago = json_data["valor_pago"]
+        data_lancamento  = json_data["data_lancamento"]
+        categoria = json_data["categoria"]
+
+        data_lancamento = datetime.strptime(data_lancamento, '%Y-%m-%d')
+        valor_pago = Decimal(valor_pago)
+
+        if Categoria.objects.filter(nome=categoria).exists():
+         
+            mov_att = Movimentacao(id=id, descricao=descricao, valor_pago=valor_pago, data_lancamento=data_lancamento, cod_usuario=usuario,cod_categoria=Categoria.objects.get(nome=categoria), cod_padrao=None)
+            mov_att.save()
+            
+            return RespostaConteudo(200,model_to_dict(mov_att))
+
+        else:
+            return RespostaStatus(404, "Categoria Inexistente!")
+
+    def delete(self, request, id):
+        usuario = request.user
+        id_movimentacao = id
 
         query = Movimentacao.objects.filter(cod_usuario=usuario,id=id_movimentacao)
         if query:
@@ -290,7 +314,7 @@ class LoginView(APIView):#Por enquanto somente o do juan
                 "token": "Token "+str(token),
             })
         else:
-            return RespostaStatus(400, "Senha ou usuario invalidos ")    
+            return RespostaStatus(400, "Senha ou usuario invalidos!")    
 
 class LogoutView(APIView):         
     def get(self,request):
@@ -312,28 +336,3 @@ class StatusServidorView(APIView):
                 print(something, json_data[something])
 
         return RespostaStatus(200, "Requisição POST feita com sucesso!")
-
-class AtualizaMovimentação(APIView):
-
-    def post(self,request,id):
-
-        usuario = request.user
-        info = Movimentacao.objects.filter(cod_usuario=usuario,id=id)
-
-        json_data = json.loads(request.body)
-
-        descricao = json_data["descricao"]
-        valor_pago = json_data["valor_pago"]
-        data_lancamento  = json_data["data_lancamento"]
-        categoria = json_data["categoria"]
-
-        if Categoria.objects.filter(nome=categoria).exists():
-         
-            mov_att = Movimentacao(id=id, descricao=descricao, valor_pago=valor_pago, data_lancamento=data_lancamento, cod_usuario=usuario,cod_categoria=Categoria.objects.get(nome=categoria), cod_padrao=None)
-            mov_att.save()
-            
-            return RespostaConteudo(200,model_to_dict(mov_att))
-
-        else:
-            return RespostaStatus(404, "Categoria Inexistente!")
-
