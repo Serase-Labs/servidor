@@ -52,20 +52,34 @@ class Movimentacao(models.Model):
         Compara valores anteriores de valor e data e altera o saldo.
         """
 
+        # Modificando o Saldo automaticamente apartir de uma movimentação
+
         old = Movimentacao.objects.filter(pk=getattr(self,"pk",None)).first()
+
+        # Se havia informações prévias sobre a movimentação (ou seja, se for uma alteração)
         if old:
+            # Se houve alteração na data da movimentação
             if old.data_lancamento!=self.data_lancamento:
                 new_date = datetime(year=self.data_lancamento.year, month=self.data_lancamento.month, day=1)
                 saldo_old = Saldo.objects.get(cod_usuario=self.cod_usuario,mes_ano__month=old.data_lancamento.month, mes_ano__year=old.data_lancamento.year)
                 saldo_new, c = Saldo.objects.get_or_create(cod_usuario=self.cod_usuario,mes_ano=new_date)
-                saldo_old.saldo-=old.valor_pago
-                saldo_new.saldo+=self.valor_pago
                 
-                Saldo.objects.bulk_update([saldo_old, saldo_new], ["saldo"])
+                # Se os meses do saldo não são o mesmo na alteração de movimentação
+                if saldo_old.mes_ano != saldo_new.mes_ano:
+                    # Remove saldo do mês da data anterior e adiciona no mês da nova data
+                    saldo_old.saldo -= old.valor_pago
+                    saldo_new.saldo += self.valor_pago
+                    Saldo.objects.bulk_update([saldo_old, saldo_new], ["saldo"])
+                else:
+                    # Subtrai diferença com saldo anterior
+                    saldo_new.saldo += self.valor_pago - old.valor_pago
+                    saldo_new.save()
+
+            # Houve alteração no valor e não na data
             elif old.valor_pago!=self.valor_pago:
-                diferenca = self.valor_pago - old.valor_pago
+                # Subtrai diferença com saldo anterior
                 saldo = Saldo.objects.get(cod_usuario=self.cod_usuario,mes_ano__month=self.data_lancamento.month, mes_ano__year=self.data_lancamento.year)
-                saldo.saldo+=diferenca
+                saldo.saldo += self.valor_pago - old.valor_pago
                 saldo.save()
         else:
             mes_ano = datetime.strptime(self.data_lancamento, '%Y-%m-%d')
