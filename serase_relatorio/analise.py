@@ -154,6 +154,7 @@ def grafico_padrao_despesa(usuario, periodo):
     return query
 
 def grafico_anual_despesa(usuario):
+
     hoje = datetime.strptime("2020-09-10", '%Y-%m-%d')
     periodo = "anual"
     data_inicio, data_fim = calcula_periodo(periodo, hoje)
