@@ -96,9 +96,13 @@ class MovimentacaoSimplesView(APIView):
             tipo = request.GET["tipo"]
 
             if tipo == "receita":
+                
                 query = query.filter(valor_pago__gte=0) # Valor positivo
+                
             elif tipo == "despesa":
-                query = query.filter(valor_pago__lt=0)  # Valor negativo
+                
+                query = query.filter(valor_pago__lt=0)# Valor negativo
+                
             else:
                 return RespostaAtributoInvalido("tipo", tipo, ["receita", "despesa"])
 
@@ -123,6 +127,10 @@ class MovimentacaoSimplesView(APIView):
                 return RespostaFormatoDataInvalido()
 
             query = query.filter(data_lancamento__lte=data_final)
+        
+        if "filtro" in request.GET:
+                    filtro = request.GET["filtro"]
+                    query = query.filter(descricao__contains=filtro) 
 
         # Ordena query
         query = query.order_by("-data_lancamento")
