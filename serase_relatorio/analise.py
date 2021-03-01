@@ -105,8 +105,8 @@ def grafico_semanal(usuario):
     resultado = list(query)
 
     for obj in resultado:
-        obj['receita'] = round(obj['receita'], 2)
-        obj['despesa'] = round(obj['despesa'], 2)
+        obj['receita'] = float(round(obj['receita'], 2))
+        obj['despesa'] = float(round(obj['despesa'], 2))
 
     for i in list(set(range(1,8)) - set(lista_dias_inclusos)):
         receita = 0.0
@@ -116,7 +116,7 @@ def grafico_semanal(usuario):
     return sorted(resultado, key=lambda k: k['dia'])
 
 def grafico_categoria(usuario, periodo):
-    data_inicio, data_fim = calcula_periodo(periodo, hoje)
+    data_inicio, data_fim = calcula_periodo(periodo)
 
     query = Movimentacao.objects.filter(cod_usuario=usuario, data_lancamento__gte=data_inicio, data_lancamento__lte=data_fim)
     query = query.filter(valor_pago__isnull=False)
@@ -183,14 +183,12 @@ def grafico_anual_saldo(usuario):
     query = Saldo.objects.filter(cod_usuario=usuario,mes_ano__year=ano)
     query= query.annotate(mes=Extract("mes_ano","month")).annotate(ano=Extract("mes_ano","year")).values("saldo","mes","ano")
     
-    resultado = dict()
+    resultado = list()
     query = list(query)
     # Formata o resultado para a resposta esperada
     for obj in query:
         valor = {"mes": obj["mes"], "saldo": round(float(obj["saldo"]), 2)}
-        if obj["ano"] not in resultado:
-            resultado[obj["ano"]] = list()
-        resultado[obj["ano"]].append(valor)
+        resultado.append(valor)
     
         
     return resultado
