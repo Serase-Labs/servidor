@@ -20,7 +20,7 @@ from serase_app.views import *
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('padrao/', PadraoView.as_view(), name='padrao'),
+    path('padrao/', InserirPadraoView.as_view(), name='padrao'),
     path('padroes/', PadroesView.as_view(), name='padroes'),
     path('movimentacao/<int:id>/', MovimentacaoView.as_view(), name='movimentacao'),
     path('movimentacoes/', MovimentacaoSimplesView.as_view(), name='movimentacoes'),

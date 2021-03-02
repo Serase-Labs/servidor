@@ -28,9 +28,25 @@ from .serializers import *
 
 # Views sobre Padrão
 
-class InserirPadrao(generics.ListCreateAPIView):
-   queryset = PadraoMovimentacao.objects.all()
-   serializer_class = PadraoMovimentacaoSerializer
+class InserirPadraoView(APIView):
+    def post(self, request):
+        usuario = request.user
+        json_data = json.loads(request.body)
+
+        tipo= json_data["tipo"]
+        descricao = json_data["descricao"]
+        periodo = json_data["periodo"]
+        valor =json_data["valor"]
+        dia_cobranca = json_data["dia_cobranca"]
+        data_inicio  = json_data["data_inicio"]
+        data_fim= json_data["data_fim"]
+        categoria= json_data["categoria"]
+
+        if Categoria.objects.filter(nome=categoria).exists():
+            label = PadraoMovimentacao.objects.create(receita_despesa=tipo,descricao=descricao,periodo=periodo, valor=valor, dia_cobranca=dia_cobranca,data_inicio=data_inicio,data_fim=data_fim, cod_usuario=usuario,cod_categoria=Categoria.objects.get(nome=categoria))
+            return RespostaConteudo(200, model_to_dict(label))
+        else:
+            return RespostaStatus(400, "Categoria Inexistente!")
 
 class PadraoView(APIView):
     def post(self,request):
