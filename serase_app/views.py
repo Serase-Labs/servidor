@@ -49,29 +49,37 @@ class InserirPadraoView(APIView):
             return RespostaStatus(400, "Categoria Inexistente!")
 
 class PadraoView(APIView):
-    def post(self,request):
-      serializer= PadraoMovimentacaoSerializer(data=request.data)
-      if serializer.is_valid():
-        serializer.save()
-        return Response(serializer.data,status=status.HTTP_201_CREATED)
-      return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    def get(self, request, id):
 
-    ###Pegar o codigo do usuario que esta logado
-    def delete(self,request):  
-        # Usuario padrão temporário (até implementado o login)
+        #Pegando o nome do usuário 
         usuario = request.user
+        #Filtrando movimentacao e usuario 
+        query = PadraoMovimentacao.objects.filter(cod_usuario=usuario,id=id)
+        if query:
+            lista = query.values("id", "descricao", "periodo", "dia_cobranca", "data_inicio", "data_fim", valor_padrao=F("valor"), categoria=F("cod_categoria__nome"), tipo=F("receita_despesa"))
+            lista = list(lista)
+            return RespostaConteudo(200,lista)             
+        else:    
+            return RespostaStatus(400,"Erro! esse id não está cadastrado")
+    #def put(self,request,id):
 
-        # Filtragem dos padrões do usuário atual
-        query = Movimentacao.objects.filter(cod_usuario=usuario)
+        
 
-        count = PadraoMovimentacao.objects.filter(cod_usuario=usuario).delete()
-        return Response(status= HTTP_200_OK)
+    def delete(self, request, id):
+        usuario = request.user
+        id_padrao = id
+
+        query = PadraoMovimentacao.objects.filter(cod_usuario=usuario,id=id_padrao)
+        if query:
+            query.delete()
+            return RespostaStatus(200,"Padrao Deletado")             
+        else:    
+            return RespostaStatus(400,"Erro! Esse id não existe")        
+
         
 class PadroesView(APIView):
     def get(self, request):
         VALORES_VALIDOS_TIPO = ["receita", "despesa"]
-
-        # Usuario padrão temporário (até implementado o login)
         usuario = request.user
 
         # Filtragem dos padrões do usuário atual
@@ -260,13 +268,10 @@ class SaldoView(APIView):
 # Views sobre Categoria
 
 class CategoriaView(APIView):
-    """docstring for CategoriaView"""
+   
     def get(self, request):
         query = Categoria.objects.all()
-        '''if "categoria" in request.GET:
-            nome_categoria = request.GET["categoria"]
-            query = query.filter(cod_categoria__nome=nome_categoria)
-        '''
+    
         lista = query.values_list("nome", flat=True)
         lista = list(lista)
 
