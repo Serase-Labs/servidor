@@ -2,7 +2,7 @@ from django.shortcuts import render
 from django.views import View
 from django.http import JsonResponse
 
-from django.db.models import F, Sum
+from django.db.models import F, Sum, Case, When, CharField, Value
 from django.contrib.auth.models import User
 from django.forms.models import model_to_dict
 
@@ -25,6 +25,41 @@ from .utils import *
 import json
 from .serializers import *
 from decimal import Decimal
+
+
+# Views sobre cobranças (mudar para outro app futuramente)
+
+class CobrancaView(APIView):
+    def get(self, request):
+        VALORES_VALIDOS_TIPO = ["receita", "despesa"]
+        VALORES_VALIDOS_SITUACAO = ["pendente", "paga"]
+        usuario = request.user
+
+        # Cobranças são movimentações geradas por padrões
+        query = Movimentacao.objects.filter(cod_usuario=usuario, cod_padrao__isnull=False)
+
+        if "situacao" in request.GET:
+            paga = request.GET["situacao"]
+            query = query.filter(data_lancamento__isnull=paga)
+        
+        if "tipo" in request.GET:
+            tipo = request.GET["tipo"]
+
+            if tipo not in VALORES_VALIDOS_TIPO:
+                return RespostaAtributoInvalido("tipo", tipo, VALORES_VALIDOS_TIPO)
+
+            query = query.filter(cod_padrao__receita_despesa=tipo)
+        
+        # Converte queryset em uma lista de dicionarios(objetos)
+        query = query.annotate(situacao=Case(
+            When(data_lancamento__isnull=False, then=Value("paga")),
+            When(data_lancamento__isnull=True, then=Value("pendente")),
+            output_field=CharField()
+        ))
+        lista = query.values("id", "descricao", "valor_esperado", "data_geracao", "situacao", "cod_padrao", categoria=F("cod_categoria__nome"))
+        lista = list(lista)
+
+        return RespostaLista(200, lista)
 
 
 # Views sobre Padrão

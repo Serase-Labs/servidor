@@ -33,5 +33,6 @@ urlpatterns = [
     path('login/', LoginView.as_view(),name='Login'),
     path('logout/',LogoutView.as_view(),name='Logout'),
     path('status/', StatusServidorView.as_view(), name='status'),
+    path('cobrancas/', CobrancaView.as_view(), name='cobranca'),
     path('', include('serase_relatorio.urls')), # Inserir URLs antes dessa linha
 ]
