@@ -39,8 +39,16 @@ class CobrancaView(APIView):
         query = Movimentacao.objects.filter(cod_usuario=usuario, cod_padrao__isnull=False)
 
         if "situacao" in request.GET:
-            paga = request.GET["situacao"]
-            query = query.filter(data_lancamento__isnull=paga)
+            situacao = request.GET["situacao"]
+
+            if tipo not in VALORES_VALIDOS_SITUACAO:
+                return RespostaAtributoInvalido("situacao", tipo, VALORES_VALIDOS_TIPO)
+
+            if situacao == "paga":
+                query = query.filter(data_lancamento__isnull=False)
+            elif situacao == "pendente":
+                query = query.filter(data_lancamento__isnull=True)
+            # elif situacao == "...":
         
         if "tipo" in request.GET:
             tipo = request.GET["tipo"]
@@ -49,7 +57,12 @@ class CobrancaView(APIView):
                 return RespostaAtributoInvalido("tipo", tipo, VALORES_VALIDOS_TIPO)
 
             query = query.filter(cod_padrao__receita_despesa=tipo)
-        
+
+        if "cod_padrao" in request.GET:
+            tipo = request.GET["cod_padrao"]
+            #TO-DO: adicionar if pra checar se padrao existe
+            query = query.filter(cod_padrao=cod_padrao)
+
         # Converte queryset em uma lista de dicionarios(objetos)
         query = query.annotate(situacao=Case(
             When(data_lancamento__isnull=False, then=Value("paga")),
