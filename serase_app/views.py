@@ -49,29 +49,37 @@ class InserirPadraoView(APIView):
             return RespostaStatus(400, "Categoria Inexistente!")
 
 class PadraoView(APIView):
-    def post(self,request):
-      serializer= PadraoMovimentacaoSerializer(data=request.data)
-      if serializer.is_valid():
-        serializer.save()
-        return Response(serializer.data,status=status.HTTP_201_CREATED)
-      return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    def get(self, request, id):
 
-    ###Pegar o codigo do usuario que esta logado
-    def delete(self,request):  
-        # Usuario padrão temporário (até implementado o login)
+        #Pegando o nome do usuário 
         usuario = request.user
+        
+        query = PadraoMovimentacao.objects.filter(cod_usuario=usuario,id=id)
+        if query:
+            lista = query.values("id", "descricao", "periodo", "dia_cobranca", "data_inicio", "data_fim", valor_padrao=F("valor"), categoria=F("cod_categoria__nome"), tipo=F("receita_despesa"))
+            lista = list(lista)
+            return RespostaConteudo(200,lista)             
+        else:    
+            return RespostaStatus(400,"Erro! esse id não está cadastrado")
+    #def put(self,request,id):
 
-        # Filtragem dos padrões do usuário atual
-        query = Movimentacao.objects.filter(cod_usuario=usuario)
+        
 
-        count = PadraoMovimentacao.objects.filter(cod_usuario=usuario).delete()
-        return Response(status= HTTP_200_OK)
+    def delete(self, request, id):
+        usuario = request.user
+        id_padrao = id
+
+        query = PadraoMovimentacao.objects.filter(cod_usuario=usuario,id=id_padrao)
+        if query:
+            query.delete()
+            return RespostaStatus(200,"Padrao Deletado")             
+        else:    
+            return RespostaStatus(400,"Erro! Esse id não existe")        
+
         
 class PadroesView(APIView):
     def get(self, request):
         VALORES_VALIDOS_TIPO = ["receita", "despesa"]
-
-        # Usuario padrão temporário (até implementado o login)
         usuario = request.user
 
         # Filtragem dos padrões do usuário atual
@@ -226,6 +234,69 @@ class MovimentacaoView(APIView):
             return RespostaStatus(400,"Erro! Esse id não existe")         
 
 
+
+#Views sobre Divida
+
+
+class InserirDividaView(APIView):
+    def post(self, request):
+        usuario = request.user
+        json_data = json.loads(request.body)
+        
+        #Divida 
+        credor= json_data["credor"]
+        valor_pago = json_data["valor_pago"]
+        juros = json_data["juros"]
+        juros_tipo =json_data["juros_tipo"]
+        juros_ativos = json_data["juros_ativos"]
+        
+
+        #Padrão da Divida  
+        tipo= "divida"
+    
+        descricao = credor
+        periodo = json_data["periodo"]
+        dia_cobranca = json_data["dia_cobranca"]
+        data_inicio  = json_data["data_inicio"]
+        data_fim= json_data["data_fim"]
+        categoria= json_data["categoria"]
+    
+        if Categoria.objects.filter(nome=categoria).exists():
+            cod_padrao = PadraoMovimentacao.objects.create(receita_despesa=tipo,descricao=descricao,periodo=periodo, dia_cobranca=dia_cobranca,data_inicio=data_inicio,data_fim=data_fim, cod_usuario=usuario,cod_categoria=Categoria.objects.get(nome=categoria)).id
+            CreateDivida=Divida.objects.create(credor=credor,valor_pago=valor_pago,juros=juros,juros_tipo=juros_tipo,juros_ativos=juros_ativos,cod_padrao=PadraoMovimentacao.objects.get(id=cod_padrao))
+            return RespostaConteudo(200, model_to_dict(CreateDivida))
+        else:
+            return RespostaStatus(400, "Falha no Sistema")
+
+
+class DividaView(APIView):
+    def get(self,request,id):
+        usuario = request.user
+        query = Divida.objects.filter(id=id)
+        if query:
+            codigo_padrao = Divida.objects.get(id=id).cod_padrao.id
+            query_aux = PadraoMovimentacao.objects.filter(cod_usuario=usuario,id=codigo_padrao)
+            lista = query.values("id", "credor", "valor_pago", "valor_divida", "juros", "juros_tipo", "cod_padrao")
+            lista_aux= query_aux.values("periodo","dia_cobranca","data_inicio","data_fim","valor",categoria=F("cod_categoria__nome"))
+            lista = list(lista)
+            lista_aux=list(lista_aux)
+            lista.extend(lista_aux)
+            return RespostaConteudo(200,lista)             
+        else:    
+            return RespostaStatus(400,"Erro! esse id não está cadastrado")
+    def delete(self,request,id):
+        usuario = request.user
+        id_divida = id
+
+        query = Divida.objects.filter(id=id)
+        if query:
+            codigo_padrao = Divida.objects.get(id=id_divida).cod_padrao
+            query_aux = Divida.objects.get(id=id_divida).cod_padrao
+            query.delete()
+            query_aux.delete()
+            return RespostaStatus(200,"Divida Deletada")             
+        else:    
+            return RespostaStatus(400,"Erro! Esse id não existe")   
 # Views sobre Saldo
 
 class SaldoView(APIView):
@@ -260,13 +331,10 @@ class SaldoView(APIView):
 # Views sobre Categoria
 
 class CategoriaView(APIView):
-    """docstring for CategoriaView"""
+   
     def get(self, request):
         query = Categoria.objects.all()
-        '''if "categoria" in request.GET:
-            nome_categoria = request.GET["categoria"]
-            query = query.filter(cod_categoria__nome=nome_categoria)
-        '''
+    
         lista = query.values_list("nome", flat=True)
         lista = list(lista)
 
