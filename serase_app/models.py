@@ -34,6 +34,11 @@ class PadraoMovimentacao(models.Model):
     cod_usuario = models.ForeignKey(User, on_delete=models.CASCADE)
     cod_categoria = models.ForeignKey(Categoria, on_delete=models.CASCADE)
 
+    @property
+    def ultima_cobranca(self):
+        query = Movimentacao.objects.filter(cod_padrao=self)
+        return query.latest("data_geracao") if query.exists() else None
+
     def __str__(self):
         return self.descricao 
 

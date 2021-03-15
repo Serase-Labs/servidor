@@ -1,5 +1,6 @@
 # Arquivo para criação de códigos uteis para diversas views
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, date
+from dateutil.relativedelta import relativedelta
 from .padroes_resposta import RespostaPaginacao, RespostaAtributoInvalido
 from .models import *
 from django.db.models import F, Sum
@@ -95,3 +96,20 @@ def calcular_saldo(usuario, mes_ano=mes_ano_atual(), hoje=mes_ano_atual()):
     saldo_total = query_saldo.aggregate(Sum("saldo"))["saldo__sum"] or 0
 
     return saldo_mes, saldo_total
+
+# Funções relativas a cobrança
+
+def add_business_days(from_date, number_of_days):
+    to_date = from_date
+    while number_of_days:
+       to_date += timedelta(1)
+       if to_date.weekday() < 5: # i.e. is not saturday or sunday
+           number_of_days -= 1
+    return to_date
+
+def week_num(date):
+    return date.isocalendar()[1]
+
+def business_days_in_month(mes, dias):
+    data = mes.replace(day=1) - timedelta(days=1)
+    return add_business_days(data, dias)
