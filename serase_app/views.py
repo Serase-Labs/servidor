@@ -24,6 +24,7 @@ from .padroes_resposta import *
 from .utils import *
 import json
 from .serializers import *
+from datetime import date
 
 
 # Views sobre Padrão
@@ -58,12 +59,55 @@ class PadraoView(APIView):
         if query:
             lista = query.values("id", "descricao", "periodo", "dia_cobranca", "data_inicio", "data_fim", valor_padrao=F("valor"), categoria=F("cod_categoria__nome"), tipo=F("receita_despesa"))
             lista = list(lista)
-            return RespostaConteudo(200,lista)             
+            return RespostaConteudo(200,lista[0])             
         else:    
             return RespostaStatus(400,"Erro! esse id não está cadastrado")
-    #def put(self,request,id):
-
+    
+    
+    def put(self,request,id):
+        usuario = request.user
+        json_data = json.loads(request.body)
+        query = PadraoMovimentacao.objects.get(id=id,cod_usuario=usuario)
         
+        if "tipo" in json_data:
+            tipo=json_data["tipo"]
+            query.receita_despesa=tipo
+            query.save()
+        if "periodo" in json_data:
+            #descricao = request.GET["descricao"]
+            periodo = json_data["periodo"]
+            query.periodo=periodo
+            query.save()
+        if "descricao" in json_data:
+            descricao = json_data["descricao"]
+            query.descricao =descricao
+            query.save()
+        if "valor" in json_data:
+            valor = json_data["valor"]
+            query.valor =valor
+            query.save()    
+        if "dia_cobranca" in json_data:
+            dia_cobranca = json_data["dia_cobranca"]
+            query.dia_cobranca =dia_cobranca
+            query.save()
+        if "data_inicio" in json_data:
+            data_inicio = json_data["data_inicio"]
+            query.data_inicio =data_inicio
+            query.save()    
+        if "data_fim" in json_data:
+            data_fim = json_data["data_fim"]
+            query.data_fim = data_fim
+            query.save()
+        if "categoria" in json_data:
+            categoria = json_data["categoria"]
+            if Categoria.objects.filter(nome=categoria).exists():
+                cod_categoria=Categoria.objects.get(nome=categoria)
+                query.cod_categoria= cod_categoria
+                query.save()
+            else:
+                return  RespostaStatus(400,"Erro! Categoria não existente") 
+        return RespostaConteudo(200,model_to_dict(query))  
+    
 
     def delete(self, request, id):
         usuario = request.user
@@ -235,6 +279,27 @@ class MovimentacaoView(APIView):
 
 
 
+
+class PagarPadraoView(APIView): 
+    def put(self,request,id):
+        user =request.user
+        query = Movimentacao.objects.get(id=id, cod_usuario=user)
+        json_data = json.loads(request.body)
+        if query:
+            valor_pago = json_data["valor_pago"]
+            data_lancamento  = date.today()
+            query.valor_pago= valor_pago
+            query.data_lancamento = data_lancamento
+            query.save()
+
+            return RespostaConteudo(200, model_to_dict(query))
+        else:
+            return RespostaStatus(400,"Erro! Esse id não existe")         
+
+
+
+
+    
 #Views sobre Divida
 
 
@@ -246,6 +311,7 @@ class InserirDividaView(APIView):
         #Divida 
         credor= json_data["credor"]
         valor_pago = json_data["valor_pago"]
+        valor_divida= json_data["valor_divida"]
         juros = json_data["juros"]
         juros_tipo =json_data["juros_tipo"]
         juros_ativos = json_data["juros_ativos"]
@@ -273,15 +339,21 @@ class DividaView(APIView):
     def get(self,request,id):
         usuario = request.user
         query = Divida.objects.filter(id=id)
+        resultado=[]
         if query:
             codigo_padrao = Divida.objects.get(id=id).cod_padrao.id
             query_aux = PadraoMovimentacao.objects.filter(cod_usuario=usuario,id=codigo_padrao)
-            lista = query.values("id", "credor", "valor_pago", "valor_divida", "juros", "juros_tipo", "cod_padrao")
-            lista_aux= query_aux.values("periodo","dia_cobranca","data_inicio","data_fim","valor",categoria=F("cod_categoria__nome"))
-            lista = list(lista)
-            lista_aux=list(lista_aux)
-            lista.extend(lista_aux)
-            return RespostaConteudo(200,lista)             
+            lista_divida = query.values("id", "credor", "valor_pago", "valor_divida", "juros", "juros_tipo", "cod_padrao")
+            lista_padrao= query_aux.values("periodo","dia_cobranca","data_inicio","data_fim","valor",categoria=F("cod_categoria__nome"))
+            lista_divida = list(lista_divida)
+            lista_padrao=list(lista_padrao)
+           
+            for (d,p) in zip(lista_divida, lista_padrao):
+                aux= {"id":d["id"],"credor":d["credor"],"valor_pago":d["valor_pago"],"valor_divida":d["valor_divida"],"juros":d["juros"],"juros_tipo":d["juros_tipo"],"cod_padrao":d["cod_padrao"],\
+                "periodo":p["periodo"],"dia_cobranca":p["dia_cobranca"],"data_inicio":p["data_inicio"],"data_fim":p["data_fim"],"valor":p["valor"], "categoria":p["categoria"]
+                }
+                resultado.append(aux)
+            return RespostaConteudo(200,resultado)             
         else:    
             return RespostaStatus(400,"Erro! esse id não está cadastrado")
     def delete(self,request,id):
@@ -297,6 +369,10 @@ class DividaView(APIView):
             return RespostaStatus(200,"Divida Deletada")             
         else:    
             return RespostaStatus(400,"Erro! Esse id não existe")   
+
+
+
+
 # Views sobre Saldo
 
 class SaldoView(APIView):
