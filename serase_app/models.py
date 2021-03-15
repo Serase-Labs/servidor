@@ -28,7 +28,7 @@ class PadraoMovimentacao(models.Model):
     descricao = models.TextField(null=True, blank=True)
     periodo = models.CharField(max_length=7, choices=PERIODO_COBRANCA)
     valor = models.DecimalField(max_digits=6, decimal_places=2, null=True, blank=True)
-    dia_cobranca = models.IntegerField() # 1º dia util, 2º dia util, 3º dia util, ...
+    dia_cobranca = models.IntegerField() # mes=> dia util, semana=> dia da semana, ano=> mes
     data_inicio = models.DateField(null=True, blank=True)
     data_fim = models.DateField(null=True, blank=True)
     cod_usuario = models.ForeignKey(User, on_delete=models.CASCADE)
@@ -104,10 +104,11 @@ class Movimentacao(models.Model):
         """
         
         instance = kwargs.get('instance')
-        epoca = instance.data_lancamento
-        saldo = Saldo.objects.get(cod_usuario=instance.cod_usuario,mes_ano__month=epoca.month, mes_ano__year=epoca.year)
-        saldo.saldo -= instance.valor_pago
-        saldo.save()
+        if instance.data_lancamento != None:
+            epoca = instance.data_lancamento
+            saldo = Saldo.objects.get(cod_usuario=instance.cod_usuario,mes_ano__month=epoca.month, mes_ano__year=epoca.year)
+            saldo.saldo -= instance.valor_pago
+            saldo.save()
 
     def __str__(self):
         return self.descricao

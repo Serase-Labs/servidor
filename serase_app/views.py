@@ -29,13 +29,18 @@ from decimal import Decimal
 
 # Views sobre cobranças (mudar para outro app futuramente)
 
+
+
 def create_cobranca(padrao, data):
-    # se padrão mensal
-    data_geracao = business_days_in_month(data, padrao.dia_cobranca)
+    if padrao.periodo == "mensal":
+        data_geracao = business_days_in_month(data, padrao.dia_cobranca)
+    elif padrao.periodo == "semanal":
+        data_geracao = day_of_week(data, padrao.dia_cobranca)
+    elif padrao.periodo == "anual":
+        data_geracao = month_of_year(data, padrao.dia_cobranca)
     
     cobranca = Movimentacao(descricao=padrao.descricao, valor_esperado=padrao.valor, data_geracao=data_geracao, cod_usuario=padrao.cod_usuario, cod_categoria=padrao.cod_categoria, cod_padrao=padrao)
     return cobranca
-
 
 def gerar_cobranca(padrao):
     data_ultima_cobranca = padrao.ultima_cobranca.data_geracao
@@ -45,12 +50,11 @@ def gerar_cobranca(padrao):
     cobrancas_criadas = []
 
     # Checa periodo do padrão e se há novas cobranças a serem feitas
-
     if padrao.periodo == "anual" and data_ultima_cobranca.year < hoje.year:
         print("Cobrança gerada por padrão anual não esta disponivel no atual momento!")
-    elif padrao.periodo == "mensal" and data_ultima_cobranca < hoje: # Cobrança mensal e ultima cobrança não foi nesse mes
+    elif padrao.periodo == "mensal" and data_ultima_cobranca < hoje:
         # Código ainda só considera cobranças de padrão normal, ignorando as de divida.
-        while data_ultima_cobranca < hoje.replace(day=1):
+        while data_ultima_cobranca < hoje.replace:
             data_ultima_cobranca = data_ultima_cobranca + relativedelta(months=1)
             data_ultima_cobranca = data_ultima_cobranca.replace(day=1)
             aux = create_cobranca(padrao, data_ultima_cobranca)
@@ -59,12 +63,19 @@ def gerar_cobranca(padrao):
             if data_ultima_cobranca <= hoje:
                 cobrancas_criadas.append(aux)
     elif padrao.periodo == "semanal" and data_ultima_cobranca.year <= hoje.year and week_num(data_ultima_cobranca) < week_num(hoje):
-        print("Cobrança gerada por padrão semanal não esta disponivel no atual momento!")
+        # Código ainda só considera cobranças de padrão normal, ignorando as de divida.
+        while data_ultima_cobranca < hoje:
+            data_ultima_cobranca = data_ultima_cobranca + timedelta(weeks=1)
+            data_ultima_cobranca = data_ultima_cobranca - timedelta(days=correct_weekday(data_ultima_cobranca))
+            aux = create_cobranca(padrao, data_ultima_cobranca)
+            data_ultima_cobranca = aux.data_geracao
+            
+                
+            if data_ultima_cobranca <= hoje:
+                cobrancas_criadas.append(aux)
 
 
-    Movimentacao.objects.bulk_create(cobrancas_criadas)
-    return cobrancas_criadas
-
+    return Movimentacao.objects.bulk_create(cobrancas_criadas)
 
 class CobrancaView(APIView):
     def get(self, request):

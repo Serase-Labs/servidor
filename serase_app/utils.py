@@ -110,6 +110,19 @@ def add_business_days(from_date, number_of_days):
 def week_num(date):
     return date.isocalendar()[1]
 
+def correct_weekday(date):
+    # Data começando no domingo como 0
+    return date.isoweekday()%7
+
 def business_days_in_month(mes, dias):
     data = mes.replace(day=1) - timedelta(days=1)
     return add_business_days(data, dias)
+
+def day_of_week(semana,day):
+    # 1=domingo, 2=segunda, ..., 7=sabado
+    data = semana + timedelta(days=correct_weekday(semana)-1 + day)
+    return data
+
+def month_of_year(ano, mes):
+    data = ano.replace(day=1,month=mes)
+    return data
