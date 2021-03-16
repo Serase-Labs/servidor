@@ -43,7 +43,7 @@ def create_cobranca(padrao, data):
     return cobranca
 
 def gerar_cobranca(padrao):
-    data_ultima_cobranca = padrao.ultima_cobranca.data_geracao
+    data_ultima_cobranca = padrao.ultima_cobranca.data_geracao if padrao.ultima_cobranca else padrao.data_geracao
     hoje = date.today()
 
     # Vetor que armazenará novas cobranças caso sejam feitas
@@ -51,10 +51,18 @@ def gerar_cobranca(padrao):
 
     # Checa periodo do padrão e se há novas cobranças a serem feitas
     if padrao.periodo == "anual" and data_ultima_cobranca.year < hoje.year:
-        print("Cobrança gerada por padrão anual não esta disponivel no atual momento!")
+        # Código ainda só considera cobranças de padrão normal, ignorando as de divida.
+        while data_ultima_cobranca < hoje:
+            data_ultima_cobranca = data_ultima_cobranca + relativedelta(years=1)
+            data_ultima_cobranca = data_ultima_cobranca.replace(day=1)
+            aux = create_cobranca(padrao, data_ultima_cobranca)
+            data_ultima_cobranca = aux.data_geracao
+            
+            if data_ultima_cobranca <= hoje:
+                cobrancas_criadas.append(aux)
     elif padrao.periodo == "mensal" and data_ultima_cobranca < hoje:
         # Código ainda só considera cobranças de padrão normal, ignorando as de divida.
-        while data_ultima_cobranca < hoje.replace:
+        while data_ultima_cobranca < hoje:
             data_ultima_cobranca = data_ultima_cobranca + relativedelta(months=1)
             data_ultima_cobranca = data_ultima_cobranca.replace(day=1)
             aux = create_cobranca(padrao, data_ultima_cobranca)
@@ -74,7 +82,8 @@ def gerar_cobranca(padrao):
             if data_ultima_cobranca <= hoje:
                 cobrancas_criadas.append(aux)
 
-
+    #for c in cobrancas_criadas:
+    #    print(c, c.data_geracao)
     return Movimentacao.objects.bulk_create(cobrancas_criadas)
 
 class CobrancaView(APIView):
