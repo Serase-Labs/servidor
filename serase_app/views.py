@@ -31,7 +31,7 @@ from decimal import Decimal
 
 
 
-def create_cobranca(padrao, data):
+def create_cobranca(padrao, data, create=False):
     if padrao.periodo == "mensal":
         data_geracao = business_days_in_month(data, padrao.dia_cobranca)
     elif padrao.periodo == "semanal":
@@ -40,10 +40,15 @@ def create_cobranca(padrao, data):
         data_geracao = month_of_year(data, padrao.dia_cobranca)
     
     cobranca = Movimentacao(descricao=padrao.descricao, valor_esperado=padrao.valor, data_geracao=data_geracao, cod_usuario=padrao.cod_usuario, cod_categoria=padrao.cod_categoria, cod_padrao=padrao)
+    
+    if create:
+        cobranca.save()
+    
     return cobranca
 
-def gerar_cobranca(padrao):
-    data_ultima_cobranca = padrao.ultima_cobranca.data_geracao if padrao.ultima_cobranca else padrao.data_geracao
+def gerar_cobranca(padrao, create=True):
+    ultima_cobranca = padrao.ultima_cobranca
+    data_ultima_cobranca = ultima_cobranca.data_geracao if ultima_cobranca else padrao.data_geracao
     hoje = date.today()
 
     # Vetor que armazenará novas cobranças caso sejam feitas
@@ -82,9 +87,19 @@ def gerar_cobranca(padrao):
             if data_ultima_cobranca <= hoje:
                 cobrancas_criadas.append(aux)
 
-    #for c in cobrancas_criadas:
-    #    print(c, c.data_geracao)
-    return Movimentacao.objects.bulk_create(cobrancas_criadas)
+    if create:
+        return Movimentacao.objects.bulk_create(cobrancas_criadas) or []
+    else:
+        return cobrancas_criadas
+
+def gera_cobrancas_pendentes(user):
+    padroes = PadraoMovimentacao.objects.filter(cod_usuario=user)
+    criadas = []
+    for padrao in padroes:
+        criadas = criadas + gerar_cobranca(padrao, False)
+    
+    return criadas
+
 
 class CobrancaView(APIView):
     def get(self, request):
