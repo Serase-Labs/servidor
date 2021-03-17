@@ -20,11 +20,15 @@ from serase_app.views import *
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('padrao/', PadraoView.as_view(), name='padrao'),
-    path('padroes/', PadroesView.as_view(), name='padroes'),
+    path('padrao/', InserirPadraoView.as_view(), name='insere_padrao'),
+    path('padrao/<int:id>/',  PadraoView.as_view(), name='padrao'),
+    path('padroes/',PadroesView.as_view(),name="padroes"),
     path('movimentacao/<int:id>/', MovimentacaoView.as_view(), name='movimentacao'),
     path('movimentacoes/', MovimentacaoSimplesView.as_view(), name='movimentacoes'),
     path('movimentacao/',InsereMovimentacaoView.as_view(), name='insere_mov'),
+    path('pagamento/<int:id>/',PagarPadraoView.as_view(),name='pagarpadrao'),
+    path('divida/',InserirDividaView.as_view(),name="insere_divida"),
+    path('divida/<int:id>/',DividaView.as_view(),name="divida"),
     path('saldo/', SaldoView.as_view(), name='saldo'),
     path('categoria/', CategoriaView.as_view(), name='categoria'),
     path('usuario/logado/',UsuarioLogadoView.as_view(),name='UserLogado'),
