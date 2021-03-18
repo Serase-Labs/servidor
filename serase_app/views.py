@@ -145,12 +145,12 @@ class InserirPadraoView(APIView):
         periodo = json_data["periodo"]
         valor =json_data["valor"]
         dia_cobranca = json_data["dia_cobranca"]
-        data_inicio  = json_data["data_inicio"]
+       # data_geracao  = json_data["data_geracao"]
         data_fim= json_data["data_fim"]
         categoria= json_data["categoria"]
 
         if Categoria.objects.filter(nome=categoria).exists():
-            label = PadraoMovimentacao.objects.create(receita_despesa=tipo,descricao=descricao,periodo=periodo, valor=valor, dia_cobranca=dia_cobranca,data_inicio=data_inicio,data_fim=data_fim, cod_usuario=usuario,cod_categoria=Categoria.objects.get(nome=categoria))
+            label = PadraoMovimentacao.objects.create(receita_despesa=tipo,descricao=descricao,periodo=periodo, valor=valor, dia_cobranca=dia_cobranca,data_fim=data_fim, cod_usuario=usuario,cod_categoria=Categoria.objects.get(nome=categoria))
             return RespostaConteudo(200, model_to_dict(label))
         else:
             return RespostaStatus(400, "Categoria Inexistente!")
@@ -163,7 +163,7 @@ class PadraoView(APIView):
         
         query = PadraoMovimentacao.objects.filter(cod_usuario=usuario,id=id)
         if query:
-            lista = query.values("id", "descricao", "periodo", "dia_cobranca", "data_inicio", "data_fim", valor_padrao=F("valor"), categoria=F("cod_categoria__nome"), tipo=F("receita_despesa"))
+            lista = query.values("id", "descricao", "periodo", "dia_cobranca", "data_geracao", "data_fim", valor_padrao=F("valor"), categoria=F("cod_categoria__nome"), tipo=F("receita_despesa"))
             lista = list(lista)
             return RespostaConteudo(200,lista[0])             
         else:    
@@ -180,7 +180,6 @@ class PadraoView(APIView):
             query.receita_despesa=tipo
             query.save()
         if "periodo" in json_data:
-            #descricao = request.GET["descricao"]
             periodo = json_data["periodo"]
             query.periodo=periodo
             query.save()
@@ -196,9 +195,9 @@ class PadraoView(APIView):
             dia_cobranca = json_data["dia_cobranca"]
             query.dia_cobranca =dia_cobranca
             query.save()
-        if "data_inicio" in json_data:
-            data_inicio = json_data["data_inicio"]
-            query.data_inicio =data_inicio
+        if "data_geracao" in json_data:
+            data_geracao = json_data["data_geracao"]
+            query.data_geracao =data_geracao
             query.save()    
         if "data_fim" in json_data:
             data_fim = json_data["data_fim"]
@@ -246,7 +245,7 @@ class PadroesView(APIView):
 
 
         # Converte queryset em uma lista de dicionarios(objetos)
-        lista = query.values("id", "descricao", "periodo", "dia_cobranca", "data_inicio", "data_fim", valor_padrao=F("valor"), categoria=F("cod_categoria__nome"), tipo=F("receita_despesa"))
+        lista = query.values("id", "descricao", "periodo", "dia_cobranca", "data_geracao", "data_fim", valor_padrao=F("valor"), categoria=F("cod_categoria__nome"), tipo=F("receita_despesa"))
         lista = list(lista)
 
         return RespostaLista(200, lista)
@@ -485,13 +484,13 @@ class InserirDividaView(APIView):
         descricao = credor
         periodo = json_data["periodo"]
         dia_cobranca = json_data["dia_cobranca"]
-        data_inicio  = json_data["data_inicio"]
+       
         data_fim= json_data["data_fim"]
         categoria= json_data["categoria"]
     
         if Categoria.objects.filter(nome=categoria).exists():
-            cod_padrao = PadraoMovimentacao.objects.create(receita_despesa=tipo,descricao=descricao,periodo=periodo, dia_cobranca=dia_cobranca,data_inicio=data_inicio,data_fim=data_fim, cod_usuario=usuario,cod_categoria=Categoria.objects.get(nome=categoria)).id
-            CreateDivida=Divida.objects.create(credor=credor,valor_pago=valor_pago,juros=juros,juros_tipo=juros_tipo,juros_ativos=juros_ativos,cod_padrao=PadraoMovimentacao.objects.get(id=cod_padrao))
+            cod_padrao = PadraoMovimentacao.objects.create(receita_despesa=tipo,descricao=descricao,periodo=periodo, dia_cobranca=dia_cobranca,data_fim=data_fim, cod_usuario=usuario,cod_categoria=Categoria.objects.get(nome=categoria)).id
+            CreateDivida=Divida.objects.create(credor=credor,valor_pago=valor_pago,valor_divida=valor_divida,juros=juros,juros_tipo=juros_tipo,juros_ativos=juros_ativos,cod_padrao= PadraoMovimentacao.objects.get(id=cod_padrao))
             return RespostaConteudo(200, model_to_dict(CreateDivida))
         else:
             return RespostaStatus(400, "Falha no Sistema")
@@ -506,18 +505,95 @@ class DividaView(APIView):
             codigo_padrao = Divida.objects.get(id=id).cod_padrao.id
             query_aux = PadraoMovimentacao.objects.filter(cod_usuario=usuario,id=codigo_padrao)
             lista_divida = query.values("id", "credor", "valor_pago", "valor_divida", "juros", "juros_tipo", "cod_padrao")
-            lista_padrao= query_aux.values("periodo","dia_cobranca","data_inicio","data_fim","valor",categoria=F("cod_categoria__nome"))
+            lista_padrao= query_aux.values("periodo","dia_cobranca","data_geracao","data_fim","valor",categoria=F("cod_categoria__nome"))
             lista_divida = list(lista_divida)
             lista_padrao=list(lista_padrao)
            
             for (d,p) in zip(lista_divida, lista_padrao):
                 aux= {"id":d["id"],"credor":d["credor"],"valor_pago":d["valor_pago"],"valor_divida":d["valor_divida"],"juros":d["juros"],"juros_tipo":d["juros_tipo"],"cod_padrao":d["cod_padrao"],\
-                "periodo":p["periodo"],"dia_cobranca":p["dia_cobranca"],"data_inicio":p["data_inicio"],"data_fim":p["data_fim"],"valor":p["valor"], "categoria":p["categoria"]
+                "periodo":p["periodo"],"dia_cobranca":p["dia_cobranca"],"data_geracao":p["data_geracao"],"data_fim":p["data_fim"],"valor":p["valor"], "categoria":p["categoria"]
                 }
                 resultado.append(aux)
             return RespostaConteudo(200,resultado)             
         else:    
             return RespostaStatus(400,"Erro! esse id não está cadastrado")
+    def put(self,request,id):
+        usuario=request.user
+        query_divida = Divida.objects.get(id=id)
+        json_data = json.loads(request.body)
+        codigo_padrao = Divida.objects.get(id=id).cod_padrao.id
+        query_padrao = PadraoMovimentacao.objects.get(cod_usuario=usuario,id=codigo_padrao)
+        resultado=[]
+        if query_divida:
+            if "credor" in json_data:
+                credor = json_data["credor"]
+                query_divida.credor= credor
+                query_padrao.descricao= credor 
+                query_divida.save()
+                query_padrao.save()
+            if "valor_pago" in json_data:
+                valor_pago = json_data["valor_pago"]
+                query_divida.valor_pago=valor_pago
+                query_divida.save()
+                
+            if "valor_divida" in json_data:
+                valor_divida = json_data["valor_divida"]
+                query_divida.valor_divida=valor_divida
+                query_divida.save()    
+                
+            if "juros" in json_data:
+                juros = json_data["juros"]
+                query_divida.juros =juros
+                query_divida.save()    
+            
+            if "juros_tipo" in json_data:
+                juros_tipo = json_data["juros_tipo"]
+                query_divida.juros_tipo =juros_tipo
+                query_divida.save()    
+                
+            if "juros_ativos" in json_data:
+                juros_ativos = json_data["juros_ativos"]
+                query_divida.juros_ativos =juros_ativos 
+                query_divida.save()    
+        
+            if "periodo" in json_data:
+                periodo = json_data["periodo"]
+                query_padrao.periodo=periodo
+                query_padrao.save()
+
+            if "valor" in json_data:
+                valor = json_data["valor"]
+                query_padrao.valor =valor
+                query_padrao.save()    
+
+            if "dia_cobranca" in json_data:
+                dia_cobranca = json_data["dia_cobranca"]
+                query_padrao.dia_cobranca =dia_cobranca
+                query_padrao.save()
+
+            if "data_geracao" in json_data:
+                data_geracao= json_data["data_geracao"]
+                query_padrao.data_geracao=data_geracao
+                query_padrao.save()
+
+            if "data_fim" in json_data:
+                data_fim = json_data["data_fim"]
+                query_padrao.data_fim = data_fim
+                query_padrao.save()
+            if "categoria" in json_data:
+                categoria = json_data["categoria"]
+                if Categoria.objects.filter(nome=categoria).exists():
+                    cod_categoria=Categoria.objects.get(nome=categoria)
+                    query_padrao.cod_categoria= cod_categoria
+                    query_padrao.save()
+                else:
+                    return  RespostaStatus(400,"Erro! Categoria não existente") 
+        else:
+            return RespostaStatus(400,"Erro! esse id não está cadastrado")
+        
+            
+        return RespostaConteudo(200,model_to_dict(query_divida))    
+
     def delete(self,request,id):
         usuario = request.user
         id_divida = id
@@ -532,7 +608,25 @@ class DividaView(APIView):
         else:    
             return RespostaStatus(400,"Erro! Esse id não existe")   
 
-
+'''class FiltrarDividasView(APIView):
+    def get (self,request):
+        usuario = request.user
+        query_padroes = PadraoMovimentacao.objects.filter(receita_despesa='divida',cod_usuario=usuario)
+        lista_padrao=list(query_padroes)
+        lista_divida=[]
+        resultado=[]
+        for obj in query_padroes:
+            id_padrao =obj.id
+            query_aux= Divida.objects.get(cod_padrao=id_padrao)
+            lista_divida.append(query_aux)
+            
+        for (d,p) in zip(lista_divida, lista_padrao):
+            aux= {"id":d["id"],"credor":d["credor"],"valor_pago":d["valor_pago"],"valor_divida":d["valor_divida"],"juros":d["juros"],"juros_tipo":d["juros_tipo"],"cod_padrao":d["cod_padrao"],\
+            "periodo":p["periodo"],"dia_cobranca":p["dia_cobranca"],"data_geracao":p["data_geracao"],"data_fim":p["data_fim"],"valor":p["valor"], "categoria":p["categoria"]
+            }
+            resultado.append(aux)
+        return RespostaConteudo(200,resultado)     
+'''
 
 
 # Views sobre Saldo

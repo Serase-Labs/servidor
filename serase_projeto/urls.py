@@ -28,6 +28,7 @@ urlpatterns = [
     path('movimentacao/',InsereMovimentacaoView.as_view(), name='insere_mov'),
     path('pagamento/<int:id>/',PagarPadraoView.as_view(),name='pagarpadrao'),
     path('divida/',InserirDividaView.as_view(),name="insere_divida"),
+    #path('dividas/',FiltrarDividasView.as_view(), name='filtra_divida'),
     path('divida/<int:id>/',DividaView.as_view(),name="divida"),
     path('saldo/', SaldoView.as_view(), name='saldo'),
     path('categoria/', CategoriaView.as_view(), name='categoria'),
