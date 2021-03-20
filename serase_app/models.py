@@ -29,7 +29,7 @@ class PadraoMovimentacao(models.Model):
     periodo = models.CharField(max_length=7, choices=PERIODO_COBRANCA)
     valor = models.DecimalField(max_digits=6, decimal_places=2, null=True, blank=True)
     dia_cobranca = models.IntegerField() # mes=> dia util, semana=> dia da semana, ano=> mes
-    data_geracao = models.DateField(auto_now_add=True)
+    data_geracao = models.DateField(default=datetime.now, blank=True)
     data_fim = models.DateField(null=True, blank=True)
     cod_usuario = models.ForeignKey(User, on_delete=models.CASCADE)
     cod_categoria = models.ForeignKey(Categoria, on_delete=models.CASCADE)
