@@ -30,68 +30,50 @@ from datetime import date
 
 # Views sobre cobranças (mudar para outro app futuramente)
 
+def gerar_cobranca(padrao, create=False):
+    ultima_cobranca = padrao.ultima_cobranca
+    data_inicio = ultima_cobranca.data_geracao + timedelta(days=1) if ultima_cobranca else padrao.data_geracao
+    data_fim = date.today() if not padrao.data_fim else min(date.today(), padrao.data_fim) 
 
-
-def create_cobranca(padrao, data):
-    if padrao.periodo == "mensal":
-        data_geracao = business_days_in_month(data, padrao.dia_cobranca)
-    elif padrao.periodo == "semanal":
-        data_geracao = day_of_week(data, padrao.dia_cobranca)
-    elif padrao.periodo == "anual":
-        data_geracao = month_of_year(data, padrao.dia_cobranca)
-    
-    cobranca = Movimentacao(descricao=padrao.descricao, valor_esperado=padrao.valor, data_geracao=data_geracao, cod_usuario=padrao.cod_usuario, cod_categoria=padrao.cod_categoria, cod_padrao=padrao)
-    return cobranca
-
-def gerar_cobranca(padrao):
-    data_ultima_cobranca = padrao.ultima_cobranca.data_geracao if padrao.ultima_cobranca else padrao.data_geracao
-    hoje = date.today()
-
-    # Vetor que armazenará novas cobranças caso sejam feitas
+    dias = []
     cobrancas_criadas = []
 
-    # Checa periodo do padrão e se há novas cobranças a serem feitas
-    if padrao.periodo == "anual" and data_ultima_cobranca.year < hoje.year:
-        # Código ainda só considera cobranças de padrão normal, ignorando as de divida.
-        while data_ultima_cobranca < hoje:
-            data_ultima_cobranca = data_ultima_cobranca + relativedelta(years=1)
-            data_ultima_cobranca = data_ultima_cobranca.replace(day=1)
-            aux = create_cobranca(padrao, data_ultima_cobranca)
-            data_ultima_cobranca = aux.data_geracao
-            
-            if data_ultima_cobranca <= hoje:
-                cobrancas_criadas.append(aux)
-    elif padrao.periodo == "mensal" and data_ultima_cobranca < hoje:
-        # Código ainda só considera cobranças de padrão normal, ignorando as de divida.
-        while data_ultima_cobranca < hoje:
-            data_ultima_cobranca = data_ultima_cobranca + relativedelta(months=1)
-            data_ultima_cobranca = data_ultima_cobranca.replace(day=1)
-            aux = create_cobranca(padrao, data_ultima_cobranca)
-            data_ultima_cobranca = aux.data_geracao
-            
-            if data_ultima_cobranca <= hoje:
-                cobrancas_criadas.append(aux)
-    elif padrao.periodo == "semanal" and data_ultima_cobranca.year <= hoje.year and week_num(data_ultima_cobranca) < week_num(hoje):
-        # Código ainda só considera cobranças de padrão normal, ignorando as de divida.
-        while data_ultima_cobranca < hoje:
-            data_ultima_cobranca = data_ultima_cobranca + timedelta(weeks=1)
-            data_ultima_cobranca = data_ultima_cobranca - timedelta(days=correct_weekday(data_ultima_cobranca))
-            aux = create_cobranca(padrao, data_ultima_cobranca)
-            data_ultima_cobranca = aux.data_geracao
-            
-                
-            if data_ultima_cobranca <= hoje:
-                cobrancas_criadas.append(aux)
+    if padrao.periodo == "anual" and data_inicio.year < data_fim.year:
+        dias = rrule(YEARLY,dtstart=data_inicio, until=data_fim, bymonth=padrao.dia_cobranca, bymonthday=1)
+    elif padrao.periodo == "mensal" and data_inicio < data_fim:
+        dias = rrule(MONTHLY,dtstart=data_inicio, until=data_fim, bysetpos=padrao.dia_cobranca, byweekday=(MO,TU,WE,TH,FR))
+    elif padrao.periodo == "semanal":
+        dias = rrule(WEEKLY,dtstart=data_inicio, until=data_fim, wkst=MO, byweekday=calc_weekday(5))
+    else:
+        return []
+    
+    for dia in dias:
+        mov = Movimentacao(descricao=padrao.descricao, valor_esperado=padrao.valor, data_geracao=dia, cod_usuario=padrao.cod_usuario, cod_categoria=padrao.cod_categoria, cod_padrao=padrao)
+        cobrancas_criadas.append(mov)
+    
+    if create:
+        return Movimentacao.objects.bulk_create(cobrancas_criadas) or []
+    else:
+        return cobrancas_criadas
 
-    #for c in cobrancas_criadas:
-    #    print(c, c.data_geracao)
-    return Movimentacao.objects.bulk_create(cobrancas_criadas)
+def gera_cobrancas_pendentes(user, create=True):
+    padroes = PadraoMovimentacao.objects.filter(cod_usuario=user)
+    criadas = []
+    for padrao in padroes:
+        criadas = criadas + gerar_cobranca(padrao, False)
+    
+    if create:
+        return Movimentacao.objects.bulk_create(cobrancas_criadas) or []
+    else:
+        return criadas
 
 class CobrancaView(APIView):
     def get(self, request):
         VALORES_VALIDOS_TIPO = ["receita", "despesa"]
         VALORES_VALIDOS_SITUACAO = ["pendente", "paga"]
         usuario = request.user
+
+        gera_cobrancas_pendentes(usuario)
 
         # Cobranças são movimentações geradas por padrões
         query = Movimentacao.objects.filter(cod_usuario=usuario, cod_padrao__isnull=False)
@@ -131,7 +113,6 @@ class CobrancaView(APIView):
         lista = list(lista)
 
         return RespostaLista(200, lista)
-
 
 # Views sobre Padrão
 
@@ -608,25 +589,67 @@ class DividaView(APIView):
         else:    
             return RespostaStatus(400,"Erro! Esse id não existe")   
 
-'''class FiltrarDividasView(APIView):
+class FiltrarDividasView(APIView):
     def get (self,request):
         usuario = request.user
-        query_padroes = PadraoMovimentacao.objects.filter(receita_despesa='divida',cod_usuario=usuario)
-        lista_padrao=list(query_padroes)
+        json_data = json.loads(request.body)
         lista_divida=[]
         resultado=[]
-        for obj in query_padroes:
-            id_padrao =obj.id
-            query_aux= Divida.objects.get(cod_padrao=id_padrao)
-            lista_divida.append(query_aux)
+       
+        query_padroes = PadraoMovimentacao.objects.filter(receita_despesa='divida',cod_usuario=usuario)
+        if "categoria" in json_data:
+            categoria = json_data["categoria"]
+            if Categoria.objects.filter(nome=categoria).exists():
+                 query_padroes = query_padroes.filter(cod_categoria__nome=categoria)          
+            else:
+                return  RespostaStatus(400,"Erro! Categoria não existente") 
+        
+        lista_padrao= query_padroes.values("id","periodo","dia_cobranca","data_geracao","data_fim","valor",categoria=F("cod_categoria__nome"))
+       
+        lista_padrao=list(lista_padrao)          
+        
+        
+        for p in lista_padrao:
+            id_padrao = p['id']
+            query_aux = Divida.objects.filter(cod_padrao=id_padrao)
+            query_aux=query_aux.values("id", "credor", "valor_pago", "valor_divida", "juros", "juros_tipo","juros_ativos")
+            if "juros_tipo" in json_data:
+                tipo = json_data["juros_tipo"]
+                if tipo == "simples":
+                    query_aux =  query_aux.filter(juros_tipo='simples')
+                    
+                elif tipo == "composto":
+                    query_aux =  query_aux.filter(juros_tipo='composto')                
+                else:
+                    return RespostaAtributoInvalido("tipo", tipo, ["simples", "composto"])
+            if "juros_ativos" in json_data:
+                juros_ativos = json_data["juros_ativos"]
+                if juros_ativos == True :
+                    query_aux =  query_aux.filter(juros_ativos=True)
+                    
+                elif juros_ativos == False:
+                    query_aux =  query_aux.filter(juros_ativos= False)                
+                else:
+                    return RespostaAtributoInvalido("juros_ativos", juros_ativos, [True,False])
+            if "paga" in json_data:
+                paga= json_data["paga"]
+                if paga == True :
+                    query_aux =  query_aux.filter(valor_pago=F('valor_divida'))
+                elif paga == False:
+                    query_aux =  query_aux.filter(valor_pago__lt=F('valor_divida'))    
+                else:
+                    return RespostaAtributoInvalido("paga", paga, [True,False])
+            if query_aux:
+                d= list(query_aux)
+                aux= {"id":d[0]["id"],"credor":d[0]["credor"],"valor_pago":d[0]["valor_pago"],"valor_divida":d[0]["valor_divida"],"juros":d[0]["juros"],"juros_tipo":d[0]["juros_tipo"],"juros_ativos":d[0]["juros_ativos"],\
+                "periodo":p["periodo"],"dia_cobranca":p["dia_cobranca"],"data_geracao":p["data_geracao"],"data_fim":p["data_fim"],"valor":p["valor"], "categoria":p["categoria"]}
             
-        for (d,p) in zip(lista_divida, lista_padrao):
-            aux= {"id":d["id"],"credor":d["credor"],"valor_pago":d["valor_pago"],"valor_divida":d["valor_divida"],"juros":d["juros"],"juros_tipo":d["juros_tipo"],"cod_padrao":d["cod_padrao"],\
-            "periodo":p["periodo"],"dia_cobranca":p["dia_cobranca"],"data_geracao":p["data_geracao"],"data_fim":p["data_fim"],"valor":p["valor"], "categoria":p["categoria"]
-            }
-            resultado.append(aux)
+                resultado.append(aux)
+            
+                  
+            
         return RespostaConteudo(200,resultado)     
-'''
+
 
 
 # Views sobre Saldo
@@ -682,6 +705,7 @@ class CadastrarUsuarioView(APIView):
         email=json_data['email']
         senha = json_data['senha'] 
         aux_usuario=User.objects.filter(email=email)
+
         if aux_usuario:
             return RespostaStatus(400,"Erro! Usario já cadastrado")
         novo_usuario = User.objects.create_user(username=nome,email=email,password=senha)
