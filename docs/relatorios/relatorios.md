@@ -1,15 +1,25 @@
-# Relatórios
+# 📄 Relatórios
 O aplicativo do Serase possui três relatórios disponíveis para o acesso do usuário. Os relatórios podem ser **semanais**, **mensais** e **anuais**, onde cada um exibe informações pertinentes ao seu período. Essas informações são exibidas no relatório através de componentes.
 
 Um relatório é composto de múltiplos componentes/análises. Então, podemos resumir um relatório como uma lista de análises, porém para uma melhor organização de ambas as partes (front-end e back-end) iremos tratar com um objeto de análises, onde os valores são os próprios componentes e as chaves sendo o nome de cada análise.
-## Relatório da Semana
+
+|Método| Caminho | Utilização |
+|--|--|--|
+|GET|[/relatorio/semanal/](#relatório-da-semana)|Retorna um conjunto de análises e gráficos seguindo a especificação do período. 
+|GET|[/relatorio/mensal/](#relatório-do-mês)|Retorna um conjunto de análises e gráficos seguindo a especificação do período. 
+|GET|[/relatorio/anual/](#relatório-do-ano)|Retorna um conjunto de análises e gráficos seguindo a especificação do período. 
+
+## 📋 Relatório da Semana
+
+**URL:** `/relatorio/semanal/`
+
 O relatório da semana é o relatório mais simples do sistema. 
 
 Componentes:
 
- - **Relatório Resumo:** Resumo do valor das movimentações da semana.
- - **Relatório Análises:** Análise de categoria em relação aos gastos da semana. 
- - **Relatório Gráfico Semanal:** Informações para a geração do gráfico de valor gasto por dia da semana.
+ - **Análise Resumo:** Resumo do valor das movimentações da semana.
+ - **Análise Categoria:** Análise de categoria em relação aos gastos da semana. 
+ - **Gráfico Semanal:** Informações para a geração do gráfico de valor gasto por dia da semana.
 
 ```
 {
@@ -36,10 +46,13 @@ Componentes:
 ```
 
 
-## Relatório do Mês
+## 📅 Relatório do Mês
+
+**URL:** `/relatorio/mensal/`
+
 Componentes:
- - **Relatório Resumo:** Resumo do valor das movimentações do mês.
- - **Relatório Análises:** Análise de categoria em relação aos gastos do mês.
+ - **Análise Resumo:** Resumo do valor das movimentações do mês.
+ - **Análise Categoria:** Análise de categoria em relação aos gastos do mês.
 
 ```
 {
@@ -57,16 +70,19 @@ Componentes:
 ```
 
 Possíveis chamadas:
-- **Relatório Gráfico Categoria:** Retorna porcentagem de despesa por categoria do mês.
-- **Relatório Gráfico Padrão de Despesa:** Retorna porcentagem de despesa por padrão de despesa do mês.
-- **Relatório Gráfico Mensal de Despesa:** Retorna quantidade de despesas de cada dia do mês.
+- **Gráfico Categoria:** Retorna porcentagem de despesa por categoria do mês.
+- **Gráfico Padrão de Despesa:** Retorna porcentagem de despesa por padrão de despesa do mês.
+- **Gráfico Mensal de Despesa:** Retorna quantidade de despesas de cada dia do mês.
 
 *(O retorno de cada uma das análises opcionais pode ser visto no arquivo de componentes)*
 
-## Relatório do Ano
+## 🌍 Relatório do Ano
+
+**URL:** `/relatorio/anual/`
+
 Componentes:
- - **Relatório Resumo:** Resumo do valor das movimentações do ano.
- - **Relatório Análises:** Análise de categoria em relação aos gastos do ano.
+ - **Análise Resumo:** Resumo do valor das movimentações do ano.
+ - **Análise Categoria:** Análise de categoria em relação aos gastos do ano.
  - **Gráfico Anual de Saldo:** Informações para a geração do gráfico de variação do saldo ao longo do ano.
  - **Gráfico Anual de Despesa Fixa:** Variação de cada despesa fixa variavel ao longo do ano.
 
@@ -105,7 +121,7 @@ Componentes:
 ```
 
 Possíveis chamadas:
-- **Relatório Gráfico Categoria:** Retorna porcentagem de despesa por categoria do ano.
-- **Relatório Gráfico Padrão de Despesa:** Retorna porcentagem de despesa por padrão de despesa do ano.
+- **Gráfico Categoria:** Retorna porcentagem de despesa por categoria do ano.
+- **Gráfico Padrão de Despesa:** Retorna porcentagem de despesa por padrão de despesa do ano.
 
 *(O retorno de cada uma das análises opcionais pode ser visto no arquivo de componentes)*
