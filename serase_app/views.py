@@ -592,13 +592,12 @@ class DividaView(APIView):
 class FiltrarDividasView(APIView):
     def get (self,request):
         usuario = request.user
-        json_data = json.loads(request.body)
         lista_divida=[]
         resultado=[]
        
         query_padroes = PadraoMovimentacao.objects.filter(receita_despesa='divida',cod_usuario=usuario)
-        if "categoria" in json_data:
-            categoria = json_data["categoria"]
+        if "categoria" in request.GET:
+            categoria = request.GET["categoria"]
             if Categoria.objects.filter(nome=categoria).exists():
                  query_padroes = query_padroes.filter(cod_categoria__nome=categoria)          
             else:
@@ -613,8 +612,8 @@ class FiltrarDividasView(APIView):
             id_padrao = p['id']
             query_aux = Divida.objects.filter(cod_padrao=id_padrao)
             query_aux=query_aux.values("id", "credor", "valor_pago", "valor_divida", "juros", "juros_tipo","juros_ativos")
-            if "juros_tipo" in json_data:
-                tipo = json_data["juros_tipo"]
+            if "juros_tipo" in request.GET:
+                tipo = request.GET["juros_tipo"]
                 if tipo == "simples":
                     query_aux =  query_aux.filter(juros_tipo='simples')
                     
@@ -622,8 +621,8 @@ class FiltrarDividasView(APIView):
                     query_aux =  query_aux.filter(juros_tipo='composto')                
                 else:
                     return RespostaAtributoInvalido("tipo", tipo, ["simples", "composto"])
-            if "juros_ativos" in json_data:
-                juros_ativos = json_data["juros_ativos"]
+            if "juros_ativos" in request.GET:
+                juros_ativos = request.GET["juros_ativos"]
                 if juros_ativos == True :
                     query_aux =  query_aux.filter(juros_ativos=True)
                     
@@ -631,8 +630,8 @@ class FiltrarDividasView(APIView):
                     query_aux =  query_aux.filter(juros_ativos= False)                
                 else:
                     return RespostaAtributoInvalido("juros_ativos", juros_ativos, [True,False])
-            if "paga" in json_data:
-                paga= json_data["paga"]
+            if "paga" in request.GET:
+                paga= request.GET["paga"]
                 if paga == True :
                     query_aux =  query_aux.filter(valor_pago=F('valor_divida'))
                 elif paga == False:
