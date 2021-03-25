@@ -2,7 +2,6 @@ from django.shortcuts import render
 from rest_framework.views import APIView
 
 from serase_app.padroes_resposta import *
-from serase_app.views import UsuarioLogadoView
 from .analise import *
 from .utils import validade_periodo, erro_periodo
 

@@ -40,6 +40,8 @@ INSTALLED_APPS = [
     'corsheaders',
     'serase_app',
     'serase_relatorio',
+    'serase_login',
+    'serase_padrao',
     'rest_framework',
     'rest_framework.authtoken',
 ]
