@@ -82,8 +82,8 @@ class CobrancaView(APIView):
         if "situacao" in request.GET:
             situacao = request.GET["situacao"]
 
-            if tipo not in VALORES_VALIDOS_SITUACAO:
-                return RespostaAtributoInvalido("situacao", tipo, VALORES_VALIDOS_TIPO)
+            if situacao not in VALORES_VALIDOS_SITUACAO:
+                return RespostaAtributoInvalido("situacao", situacao, VALORES_VALIDOS_SITUACAO)
 
             if situacao == "paga":
                 query = query.filter(data_lancamento__isnull=False)
