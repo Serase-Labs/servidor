@@ -4,6 +4,7 @@ from django.forms.models import model_to_dict
 
 # All rest framework stuff
 from rest_framework.views import APIView
+from rest_framework.permissions import IsAuthenticated
 
 # All python and dependences stuff
 import json
@@ -18,13 +19,14 @@ from serase_app.models import *
 from serase_app.padroes_resposta import *
 
 
-
 # Movimentação
 
 class MovimentacaoSimplesView(APIView):
+    permission_classes = [IsAuthenticated]
+
     def get(self, request):
         # Usuario padrão temporário (até implementado o login)
-        usuario = User.objects.get(username="jv_eumsmo")
+        usuario = request.user
         # Filtragem dos padrões do usuário atual
         query = Movimentacao.objects.filter(cod_usuario=usuario)
 
@@ -85,8 +87,10 @@ class MovimentacaoSimplesView(APIView):
             return RespostaLista(200, list(lista))
 
 class InsereMovimentacaoView(APIView):
+    permission_classes = [IsAuthenticated]
+
     def post(self, request):
-        usuario = User.objects.get(username="jv_eumsmo")
+        usuario = request.user
         json_data = json.loads(request.body)
 
         descricao = json_data["descricao"]
@@ -101,9 +105,10 @@ class InsereMovimentacaoView(APIView):
             return RespostaStatus(400, "Categoria Inexistente!")
 
 class MovimentacaoView(APIView):
+    permission_classes = [IsAuthenticated]
+
     def get(self, request, id):
 
-        #Pegando o nome do usuário que nesse caso é o Juan (usuario padrão no momento)
         usuario = request.user
         #Filtrando movimentacao e usuario = pegando a movimentacao do usuario que ele estiver logado
         info = Movimentacao.objects.filter(cod_usuario=usuario,id=id)
@@ -148,10 +153,11 @@ class MovimentacaoView(APIView):
             return RespostaStatus(404, "Categoria Inexistente!")
 
 class MovimentacaoView(APIView):
+    permission_classes = [IsAuthenticated]
+
     def get(self, request, id):
 
-        #Pegando o nome do usuário que nesse caso é o Juan (usuario padrão no momento)
-        usuario = User.objects.get(username="jv_eumsmo")
+        usuario = request.user
         #Filtrando movimentacao e usuario = pegando a movimentacao do usuario que ele estiver logado
         info = Movimentacao.objects.filter(cod_usuario=usuario,id=id)
 
@@ -171,7 +177,7 @@ class MovimentacaoView(APIView):
 
     def put(self,request,id):
 
-        usuario = User.objects.get(username="jv_eumsmo")
+        usuario = request.user
         info = Movimentacao.objects.filter(cod_usuario=usuario,id=id)
 
         json_data = json.loads(request.body)
@@ -195,7 +201,7 @@ class MovimentacaoView(APIView):
             return RespostaStatus(404, "Categoria Inexistente!")
 
     def delete(self, request, id):
-        usuario = User.objects.get(username="jv_eumsmo")
+        usuario = request.user
         id_movimentacao = id
 
         query = Movimentacao.objects.filter(cod_usuario=usuario,id=id_movimentacao)
@@ -209,12 +215,13 @@ class MovimentacaoView(APIView):
 # Saldo
 
 class SaldoView(APIView):
+    permission_classes = [IsAuthenticated]
+    
     def get(self, request):
         hoje = datetime.today()
         mes_ano = hoje
         
-        # Usuario padrão temporário (até implementado o login)
-        usuario = User.objects.get(username="jv_eumsmo")
+        usuario = request.user
 
         # Filtragem por mes_ano
         if "mes_ano" in request.GET:

@@ -5,6 +5,7 @@ from django.forms.models import model_to_dict
 
 # All rest framework stuff
 from rest_framework.views import APIView
+from rest_framework.permissions import IsAuthenticated
 
 # All python and dependences stuff
 from datetime import date
@@ -19,6 +20,8 @@ from serase_app.padroes_resposta import *
 # Padrão
 
 class InserirPadraoView(APIView):
+    permission_classes = [IsAuthenticated]
+
     def post(self, request):
         usuario = request.user
         json_data = json.loads(request.body)
@@ -39,6 +42,8 @@ class InserirPadraoView(APIView):
             return RespostaStatus(400, "Categoria Inexistente!")
 
 class PadraoView(APIView):
+    permission_classes = [IsAuthenticated]
+
     def get(self, request, id):
 
         #Pegando o nome do usuário 
@@ -51,8 +56,7 @@ class PadraoView(APIView):
             return RespostaConteudo(200,lista[0])             
         else:    
             return RespostaStatus(400,"Erro! esse id não está cadastrado")
-    
-    
+     
     def put(self,request,id):
         usuario = request.user
         json_data = json.loads(request.body)
@@ -96,7 +100,6 @@ class PadraoView(APIView):
                 return  RespostaStatus(400,"Erro! Categoria não existente") 
         return RespostaConteudo(200,model_to_dict(query))  
     
-
     def delete(self, request, id):
         usuario = request.user
         id_padrao = id
@@ -109,6 +112,8 @@ class PadraoView(APIView):
             return RespostaStatus(400,"Erro! Esse id não existe")        
     
 class PadroesView(APIView):
+    permission_classes = [IsAuthenticated]
+
     def get(self, request):
         VALORES_VALIDOS_TIPO = ["receita", "despesa"]
         usuario = request.user
@@ -174,6 +179,8 @@ def gera_cobrancas_pendentes(user, create=True):
         return criadas
 
 class CobrancaView(APIView):
+    permission_classes = [IsAuthenticated]
+
     def get(self, request):
         VALORES_VALIDOS_TIPO = ["receita", "despesa"]
         VALORES_VALIDOS_SITUACAO = ["pendente", "paga"]
@@ -221,6 +228,8 @@ class CobrancaView(APIView):
         return RespostaLista(200, lista)
 
 class PagarPadraoView(APIView): 
+    permission_classes = [IsAuthenticated]
+
     def put(self,request,id):
         user =request.user
         query = Movimentacao.objects.get(id=id, cod_usuario=user)
@@ -241,6 +250,8 @@ class PagarPadraoView(APIView):
 # Divida 
 
 class InserirDividaView(APIView):
+    permission_classes = [IsAuthenticated]
+
     def post(self, request):
         usuario = request.user
         json_data = json.loads(request.body)
@@ -272,6 +283,8 @@ class InserirDividaView(APIView):
             return RespostaStatus(400, "Falha no Sistema")
 
 class DividaView(APIView):
+    permission_classes = [IsAuthenticated]
+
     def get(self,request,id):
         usuario = request.user
         query = Divida.objects.filter(id=id)
@@ -292,6 +305,7 @@ class DividaView(APIView):
             return RespostaConteudo(200,resultado)             
         else:    
             return RespostaStatus(400,"Erro! esse id não está cadastrado")
+    
     def put(self,request,id):
         usuario=request.user
         query_divida = Divida.objects.get(id=id)
@@ -384,6 +398,8 @@ class DividaView(APIView):
             return RespostaStatus(400,"Erro! Esse id não existe")   
 
 class FiltrarDividasView(APIView):
+    permission_classes = [IsAuthenticated]
+    
     def get (self,request):
         usuario = request.user
         lista_divida=[]

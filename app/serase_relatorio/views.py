@@ -3,6 +3,7 @@ from django.contrib.auth.models import User
 
 # All rest framework stuff
 from rest_framework.views import APIView
+from rest_framework.permissions import IsAuthenticated
 
 # All in this app stuff
 from .analise import *
@@ -16,83 +17,98 @@ from serase_app.padroes_resposta import *
 # Analises / Componentes
 
 class ResumoAnaliseView(APIView):
+    permission_classes = [IsAuthenticated]
+
     def get(self, request, periodo):
         if not validade_periodo(periodo):
             return erro_periodo(periodo)
 
-        usuario = User.objects.get(username="jv_eumsmo")
+        usuario = request.user
         resposta = analise_resumo(usuario, periodo)
 
         return RespostaConteudo(200, resposta)
 
 class CategoriaAnaliseView(APIView):
+    permission_classes = [IsAuthenticated]
+
     def get(self, request, periodo):
         if not validade_periodo(periodo):
             return erro_periodo(periodo)
 
-        usuario = User.objects.get(username="jv_eumsmo")
-        
+        usuario = request.user
         resposta = analise_categoria(usuario, periodo)
 
         return RespostaConteudo(200, resposta)
 
 class GraficoSemanalView(APIView):
-    def get(self, request):
-        usuario = User.objects.get(username="jv_eumsmo")
+    permission_classes = [IsAuthenticated]
 
+    def get(self, request):
+        usuario = request.user
         resposta = grafico_semanal(usuario)
 
         return RespostaLista(200, resposta)
 
 class GraficoCategoriaView(APIView):
+    permission_classes = [IsAuthenticated]
+
     def get(self, request, periodo):
         if not validade_periodo(periodo):
             return erro_periodo(periodo)
 
-        usuario = User.objects.get(username="jv_eumsmo")
-
+        usuario = request.user
         resposta = grafico_categoria(usuario, periodo)
 
         return RespostaLista(200, resposta)
 
 class GraficoPadraoDespesaView(APIView):
+    permission_classes = [IsAuthenticated]
+
     def get(self, request, periodo):
         if not validade_periodo(periodo):
             return erro_periodo(periodo)
 
-        usuario = User.objects.get(username="jv_eumsmo")
-
+        usuario = request.user
         resposta = grafico_padrao_despesa(usuario, periodo)
 
         return RespostaLista(200, resposta)
 
 class GraficoAnualDespesaView(APIView):
-    def get(self, request):
-        usuario = User.objects.get(username="jv_eumsmo")
+    permission_classes = [IsAuthenticated]
 
+    def get(self, request):
+        usuario = request.user
         resposta = grafico_anual_despesa(usuario)
 
         return RespostaConteudo(200, resposta)
+
 class GraficoAnualSaldoView(APIView):
+    permission_classes = [IsAuthenticated]
+
     def get(self,request):
-        usuario = User.objects.get(username="jv_eumsmo")
+        usuario = request.user
         resposta = grafico_anual_saldo(usuario)
 
         return RespostaConteudo(200, resposta)
+
 class GraficoMensalDespesaView(APIView):
+    permission_classes = [IsAuthenticated]
+
     def get(self,request):
         
-        usuario = User.objects.get(username="jv_eumsmo")
-        
+        usuario = request.user
         resposta= grafico_mensal_despesa(usuario)
+
         return RespostaConteudo(200, resposta)
                         
 
 # Relatórios
 
 class RelatorioSemanalView(APIView):
+    permission_classes = [IsAuthenticated]
+
     def get(self, request):
-        usuario = User.objects.get(username="jv_eumsmo")
+        usuario = request.user
         periodo = "semanal"
 
         return RespostaConteudo(200, {
@@ -102,8 +118,10 @@ class RelatorioSemanalView(APIView):
         })
 
 class RelatorioMensalView(APIView):
+    permission_classes = [IsAuthenticated]
+
     def get(self, request):
-        usuario = User.objects.get(username="jv_eumsmo")
+        usuario = request.user
         periodo = "mensal"
 
         return RespostaConteudo(200, {
@@ -112,8 +130,10 @@ class RelatorioMensalView(APIView):
         })
 
 class RelatorioAnualView(APIView):
+    permission_classes = [IsAuthenticated]
+    
     def get(self, request):
-        usuario = User.objects.get(username="jv_eumsmo")
+        usuario = request.user
         periodo = "anual"
 
         return RespostaConteudo(200, {
