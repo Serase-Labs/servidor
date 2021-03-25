@@ -53,6 +53,7 @@ REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
         'rest_framework.authentication.TokenAuthentication',  # <-- And here
     ],
+    'EXCEPTION_HANDLER': 'serase_app.padroes_resposta.custom_exception_handler',
 }
 
 MIDDLEWARE = [
