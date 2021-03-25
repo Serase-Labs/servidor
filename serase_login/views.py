@@ -1,25 +1,13 @@
 # All Django Stuff
-from django.shortcuts import render
-from django.views import View
-from django.http import JsonResponse
-from django.db.models import F, Sum, Case, When, CharField, Value
 from django.contrib.auth.models import User
-from django.forms.models import model_to_dict
-from django.contrib.auth import login,logout, authenticate
+from django.contrib.auth import login, logout, authenticate
 
 # All rest framework stuff
-from rest_framework import viewsets
-from rest_framework.response import Response
-from rest_framework.decorators import api_view
-from rest_framework import generics
 from rest_framework.views import APIView
 from rest_framework.authtoken.models import Token
-from rest_framework.views import APIView
 
 # All python and dependences stuff
-from decimal import Decimal
 import json
-from datetime import date
 
 # All in other app stuff
 from serase_app.models import *

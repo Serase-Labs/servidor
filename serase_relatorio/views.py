@@ -1,13 +1,19 @@
-from django.shortcuts import render
+# All Django Stuff
+from django.contrib.auth.models import User
+
+# All rest framework stuff
 from rest_framework.views import APIView
 
-from serase_app.padroes_resposta import *
+# All in this app stuff
 from .analise import *
 from .utils import validade_periodo, erro_periodo
 
+# All in other app stuff
+from serase_app.padroes_resposta import *
+
+
+
 # Analises / Componentes
-
-
 
 class ResumoAnaliseView(APIView):
     def get(self, request, periodo):

@@ -28,12 +28,6 @@ def converte_mes_ano_string(string):
     except ValueError:
         raise ValueError("Formato incorreto para mês/ano, o formato esperado é YYYY-MM")
 
-def mes_ano_atual():
-    """
-        Retorna a data correspondente ao mês/ano do dia atual.
-    """
-
-    return datetime.today()
 
 # Outras
 
@@ -83,7 +77,7 @@ def paginacao(request, lista):
     return RespostaPaginacao(200, list(lista), limite, total=total, offset=offset, proxima=proxima_pagina, anterior=pagina_anterior)
 
 
-def calcular_saldo(usuario, mes_ano=mes_ano_atual(), hoje=mes_ano_atual()):
+def calcular_saldo(usuario, mes_ano=datetime.today(), hoje=datetime.today()):
     query_saldo = Saldo.objects.filter(cod_usuario=usuario)
     
     query_mes = query_saldo.filter(mes_ano__month=mes_ano.month, mes_ano__year=mes_ano.year)
@@ -96,8 +90,3 @@ def calcular_saldo(usuario, mes_ano=mes_ano_atual(), hoje=mes_ano_atual()):
     saldo_total = query_saldo.aggregate(Sum("saldo"))["saldo__sum"] or 0
 
     return saldo_mes, saldo_total
-
-# Funções relativas a cobrança
-
-def calc_weekday(day):
-    return (day+5)%7

@@ -1,31 +1,22 @@
-from django.shortcuts import render
-from django.views import View
-from django.http import JsonResponse
-
-from django.db.models import F, Sum, Case, When, CharField, Value
+# All Django Stuff
 from django.contrib.auth.models import User
 from django.forms.models import model_to_dict
 
-from django.contrib.auth import login,logout, authenticate
-
-from rest_framework import viewsets
-from rest_framework.response import Response
-from rest_framework import status, serializers
-from rest_framework.decorators import api_view
-from rest_framework import generics
+# All rest framework stuff
 from rest_framework.views import APIView
-from rest_framework.authtoken.models import Token
 
-from decimal import Decimal
-from rest_framework.views import APIView
+# All python and dependences stuff
 import json
+from datetime import date
+from decimal import Decimal
+
+# All in this app stuff
+from .utils import *
+
+# All in other app stuff
 from serase_app.models import *
 from serase_app.padroes_resposta import *
-from .utils import *
-import json
-from serase_app.serializers import *
-from decimal import Decimal
-from datetime import date
+
 
 
 # Movimentação
@@ -219,7 +210,7 @@ class MovimentacaoView(APIView):
 
 class SaldoView(APIView):
     def get(self, request):
-        hoje = mes_ano_atual()
+        hoje = datetime.today()
         mes_ano = hoje
         
         # Usuario padrão temporário (até implementado o login)

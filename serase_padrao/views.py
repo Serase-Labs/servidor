@@ -1,26 +1,19 @@
 # All Django Stuff
-from django.shortcuts import render
-from django.views import View
-from django.http import JsonResponse
-from django.db.models import F, Sum, Case, When, CharField, Value
+from django.db.models import F, Case, When, CharField, Value
 from django.contrib.auth.models import User
 from django.forms.models import model_to_dict
 
 # All rest framework stuff
-from rest_framework.response import Response
 from rest_framework.views import APIView
 
 # All python and dependences stuff
-from decimal import Decimal
 from datetime import date
 import json
-
-# All in this app stuff
-
 
 # All in other app stuff
 from serase_app.models import *
 from serase_app.padroes_resposta import *
+
 
 
 # Padrão

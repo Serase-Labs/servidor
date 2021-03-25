@@ -8,7 +8,10 @@ Saiba como rodar o servidor no arquivo [como_rodar.md](./docs/como_rodar.md)!
 
 **Trabalhando na versão:** ❓ `xxxxxxx`
 ---
-EM ANDAMENTO
+
+Esta versão inclui:
+- Views separadas em apps diferentes com o propósito de melhorar a organização de código
+- Deleção de códigos desnecessários
 
 
 **Versão Anterior:** 👛 `pre-bitcoin`

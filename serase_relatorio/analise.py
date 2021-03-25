@@ -1,10 +1,18 @@
-from .utils import *
-from serase_app.models import *
-
-from datetime import datetime, timedelta
+# All Django Stuff
 from django.db.models import F, Sum, Q, FloatField, Count
 from django.db.models import When, Case, Value, CharField
 from django.db.models.functions import Coalesce, Extract, Cast
+
+# All python and dependences stuff
+from datetime import datetime
+
+# All in this app stuff
+from .utils import *
+
+# All in other app stuff
+from serase_app.models import *
+
+
 
 def analise_resumo(usuario, periodo):
     data_inicio, data_fim = calcula_periodo(periodo)
