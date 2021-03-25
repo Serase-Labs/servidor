@@ -6,8 +6,12 @@ Esse repositório abriga os códigos e documentação do servidor da aplicação
 
 Saiba como rodar o servidor no arquivo [como_rodar.md](./docs/como_rodar.md)!
 
+**Trabalhando na versão:** ❓ `xxxxxxx`
+---
+EM ANDAMENTO
 
-**Versão Atual:** 👛 `pre-bitcoin`
+
+**Versão Anterior:** 👛 `pre-bitcoin`
 ---
 
 **Nome da versão:** `pre-bitcoin`
