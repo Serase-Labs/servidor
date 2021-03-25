@@ -26,6 +26,7 @@ import json
 from .serializers import *
 from decimal import Decimal
 from datetime import date
+from dateutil.rrule import *
 
 
 # Views sobre cobranças (mudar para outro app futuramente)
@@ -63,7 +64,7 @@ def gera_cobrancas_pendentes(user, create=True):
         criadas = criadas + gerar_cobranca(padrao, False)
     
     if create:
-        return Movimentacao.objects.bulk_create(cobrancas_criadas) or []
+        return Movimentacao.objects.bulk_create(criadas) or []
     else:
         return criadas
 
