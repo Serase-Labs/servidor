@@ -25,7 +25,7 @@ from .utils import *
 import json
 from .serializers import *
 from decimal import Decimal
-from datetime import date
+from datetime import date, timedelta
 from dateutil.rrule import *
 
 
@@ -264,6 +264,10 @@ class MovimentacaoSimplesView(APIView):
         if "categoria" in request.GET:
             nome_categoria = request.GET["categoria"]
             query = query.filter(cod_categoria__nome=nome_categoria)
+        
+        if "cod_padrao" in request.GET:
+            padrao = request.GET["cod_padrao"]
+            query = query.filter(cod_padrao=padrao)
 
         # Filtragem por periodo
         if "data_inicial" in request.GET:
