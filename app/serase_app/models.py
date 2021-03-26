@@ -117,13 +117,13 @@ pre_delete.connect(Movimentacao.pre_delete, sender=Movimentacao)
 
 class Divida(models.Model):
 
-    TIPOS_DE_JUROS=(("composto","composto"),("simples","simples"))
+    TIPOS_DE_JUROS=(("composto","composto"),("simples","simples"), ("não ativo", "não ativo"))
 
     credor = models.CharField(max_length=40, null=True, blank=True)
     valor_pago= models.DecimalField(max_digits=9, decimal_places=2, null=True, blank=True)
     valor_divida= models.DecimalField(max_digits=9, decimal_places=2, null=True, blank=True)
     juros= models.DecimalField(max_digits=9, decimal_places=2, null=True, blank=True)
-    juros_tipo=models.CharField(max_length=8, choices=TIPOS_DE_JUROS)
+    juros_tipo=models.CharField(max_length=8, choices=TIPOS_DE_JUROS, default="não ativo")
     juros_ativos= models.BooleanField(default=False)
     cod_padrao = models.ForeignKey(PadraoMovimentacao, on_delete=models.CASCADE, blank=True, null=True)
 

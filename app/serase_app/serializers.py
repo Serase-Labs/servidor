@@ -25,8 +25,13 @@ class SaldoSerializer(serializers.ModelSerializer):
 
 class UserSerializer (serializers.ModelSerializer):
     class Meta:
-        model= User
-        fields='__all__'
+        model = User
+        fields = '__all__'
+
+class DividaSerializer (serializers.ModelSerializer):
+    class Meta:
+        model = Divida
+        fields = '__all__'
 
 
 # Validadores
@@ -122,3 +127,44 @@ class FiltrarCobrancaSerializer(serializers.Serializer):
 
 class PagarCobrancaSerializer(serializers.Serializer):
     valor_pago = serializers.DecimalField(max_digits=10, decimal_places=2, required=False)
+
+
+
+class ParametroDividaSerializer(serializers.ModelSerializer):
+    categoria = serializers.CharField(max_length=20, required=False)
+    periodo = serializers.CharField(max_length=7, required=False)
+    dia_cobranca = serializers.IntegerField(required=False)
+    data_fim = serializers.DateField(required=False)
+
+    def validate_juros_tipo(self, value):
+        TIPO_JUROS = ["composto","simples"]
+        if value not in TIPO_JUROS:
+            raise serializers.ValidationError("Tipo não aceita o valor '"+value+"'. Os valores aceitos são: "+", ".join(TIPO_JUROS))
+        return value
+
+
+    def validate_categoria(self, value):
+        if not Categoria.objects.filter(nome=value).exists():
+             raise serializers.ValidationError("Categoria inexistente!")
+        return Categoria.objects.get(nome=value)
+
+    class Meta:
+        model = Divida
+        fields = '__all__'
+
+class FiltrarDividaSerializer(serializers.Serializer):
+    categoria = serializers.CharField(max_length=20, required=False)
+    juros_tipo = serializers.CharField(max_length=8, required=False)
+    juros_ativos = serializers.BooleanField(required=False)
+    quitada = serializers.BooleanField(required=False)
+
+    def validate_juros_tipo(self, value):
+        TIPO_JUROS = ["composto","simples"]
+        if value not in TIPO_JUROS:
+            raise serializers.ValidationError("Tipo não aceita o valor '"+value+"'. Os valores aceitos são: "+", ".join(TIPO_JUROS))
+        return value
+    
+    def validate_categoria(self, value):
+        if not Categoria.objects.filter(nome=value).exists():
+             raise serializers.ValidationError("Categoria inexistente!")
+        return Categoria.objects.get(nome=value)
