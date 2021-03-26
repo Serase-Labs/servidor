@@ -17,6 +17,8 @@ from .utils import *
 # All in other app stuff
 from serase_app.models import *
 from serase_app.padroes_resposta import *
+from serase_app.utils import *
+from serase_app.serializers import *
 
 
 # Movimentação
@@ -25,54 +27,38 @@ class MovimentacaoSimplesView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
-        # Usuario padrão temporário (até implementado o login)
         usuario = request.user
+
         # Filtragem dos padrões do usuário atual
         query = Movimentacao.objects.filter(cod_usuario=usuario)
-
         # Filtragem para movimentação não pendentes
         query = query.filter(valor_pago__isnull=False)
+
+        # Checa validade dos parametros
+        validacao = FiltrarMovimentacaoSerializer(data=request.GET)
+        validacao.is_valid(raise_exception=True)
 
         # Filtragem por tipo
         if "tipo" in request.GET:
             tipo = request.GET["tipo"]
-
             if tipo == "receita":
-                
                 query = query.filter(valor_pago__gte=0) # Valor positivo
-                
             elif tipo == "despesa":
-                
                 query = query.filter(valor_pago__lt=0)# Valor negativo
-                
-            else:
-                return RespostaAtributoInvalido("tipo", tipo, ["receita", "despesa"])
-
+    
         # Filtragem por categoria
-        if "categoria" in request.GET:
-            nome_categoria = request.GET["categoria"]
-            query = query.filter(cod_categoria__nome=nome_categoria)
+        if "categoria" in validacao.validated_data:
+            query = query.filter(cod_categoria=validacao.validated_data["categoria"])
 
         # Filtragem por periodo
-        if "data_inicial" in request.GET:
-            try:
-                data_inicial = converte_data_string(request.GET["data_inicial"])
-            except:
-                return RespostaFormatoDataInvalido()
+        if "data_inicial" in validacao.validated_data:
+            query = query.filter(data_lancamento__gte=validacao.validated_data["data_inicial"])
 
-            query = query.filter(data_lancamento__gte=data_inicial)
-
-        if "data_final" in request.GET:
-            try:
-                data_final = converte_data_string(request.GET["data_final"])
-            except:
-                return RespostaFormatoDataInvalido()
-
-            query = query.filter(data_lancamento__lte=data_final)
+        if "data_final" in validacao.validated_data:
+            query = query.filter(data_lancamento__lte=validacao.validated_data["data_final"])
         
         if "filtro" in request.GET:
-                    filtro = request.GET["filtro"]
-                    query = query.filter(descricao__contains=filtro) 
+            query = query.filter(descricao__contains=request.GET["filtro"]) 
 
         # Ordena query
         query = query.order_by("-data_lancamento")
@@ -93,123 +79,73 @@ class InsereMovimentacaoView(APIView):
         usuario = request.user
         json_data = json.loads(request.body)
 
-        descricao = json_data["descricao"]
-        valor_pago = json_data["valor_pago"]
-        data_lancamento  = json_data["data_lancamento"]
-        categoria = json_data["categoria"]
+        required_params(json_data, ["descricao", "valor_pago", "data_lancamento", "categoria"])
+        validacao = ParametroMovimentacaoSerializer(data=json_data)
+        validacao.is_valid(raise_exception=True)
 
-        if Categoria.objects.filter(nome=categoria).exists():
-            label = Movimentacao.objects.create(descricao=descricao, valor_pago=valor_pago, data_lancamento=data_lancamento, cod_usuario=usuario,cod_categoria=Categoria.objects.get(nome=categoria), cod_padrao=None)
-            return RespostaConteudo(200, model_to_dict(label))
-        else:
-            return RespostaStatus(400, "Categoria Inexistente!")
+        descricao = validacao.validated_data["descricao"]
+        valor_pago = validacao.validated_data["valor_pago"]
+        data_lancamento = validacao.validated_data["data_lancamento"]
+        categoria = validacao.validated_data["categoria"]
+
+        mov = Movimentacao(descricao=descricao, valor_pago=valor_pago, data_lancamento=data_lancamento, cod_usuario=usuario,cod_categoria=Categoria.objects.get(nome=categoria), cod_padrao=None)
+        mov.save()
+        return RespostaConteudo(200, model_to_dict(mov))
+            
 
 class MovimentacaoView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request, id):
-
         usuario = request.user
-        #Filtrando movimentacao e usuario = pegando a movimentacao do usuario que ele estiver logado
+
+        #Filtrando movimentacao e usuario
         info = Movimentacao.objects.filter(cod_usuario=usuario,id=id)
 
-        #vendo se retorna alguma coisa através do queryset
-        if len(info) > 0 :
-
+        # Vendo se existe através do queryset
+        if info.exists():
             # Converte queryset em uma lista que depois tá retornando só um objeto msm
             info_mov = info.values("cod_padrao","valor_esperado","valor_pago","data_geracao","data_lancamento","descricao",categoria=F("cod_categoria__nome"))
             info_mov = list(info_mov)
+            return RespostaConteudo(200, info_mov[0])
 
-        #vendo se não retorna nada
-        if len(info) == 0:
-
-            return RespostaStatus(404, "Movimentação Inexistente!")
-
-        return RespostaConteudo(200, info_mov[0])
-    
-    def put(self,request,id):
-
-        usuario = request.user
-        info = Movimentacao.objects.filter(cod_usuario=usuario,id=id)
-
-        json_data = json.loads(request.body)
-
-        descricao = json_data["descricao"]
-        valor_pago = json_data["valor_pago"]
-        data_lancamento  = json_data["data_lancamento"]
-        categoria = json_data["categoria"]
-
-        data_lancamento = datetime.strptime(data_lancamento, '%Y-%m-%d')
-        valor_pago = Decimal(valor_pago)
-
-        if Categoria.objects.filter(nome=categoria).exists():
-         
-            mov_att = Movimentacao(id=id, descricao=descricao, valor_pago=valor_pago, data_lancamento=data_lancamento, cod_usuario=usuario,cod_categoria=Categoria.objects.get(nome=categoria), cod_padrao=None)
-            mov_att.save()
-            
-            return RespostaConteudo(200,model_to_dict(mov_att))
-
-        else:
-            return RespostaStatus(404, "Categoria Inexistente!")
-
-class MovimentacaoView(APIView):
-    permission_classes = [IsAuthenticated]
-
-    def get(self, request, id):
-
-        usuario = request.user
-        #Filtrando movimentacao e usuario = pegando a movimentacao do usuario que ele estiver logado
-        info = Movimentacao.objects.filter(cod_usuario=usuario,id=id)
-
-        #vendo se retorna alguma coisa através do queryset
-        if len(info) > 0 :
-
-            # Converte queryset em uma lista que depois tá retornando só um objeto msm
-            info_mov = info.values("cod_padrao","valor_esperado","valor_pago","data_geracao","data_lancamento","descricao",categoria=F("cod_categoria__nome"))
-            info_mov = list(info_mov)
-
-        #vendo se não retorna nada
-        if len(info) == 0:
-
-            return RespostaStatus(404, "Movimentação Inexistente!")
-
-        return RespostaConteudo(200, info_mov[0])
+        return RespostaStatus(400, "Movimentação inexistente!")
 
     def put(self,request,id):
-
         usuario = request.user
         info = Movimentacao.objects.filter(cod_usuario=usuario,id=id)
 
+        if not info.exists():
+            return RespostaStatus(400, "Movimentação inexistente!")
+
         json_data = json.loads(request.body)
+        validacao = ParametroMovimentacaoSerializer(data=json_data)
+        validacao.is_valid(raise_exception=True)
 
-        descricao = json_data["descricao"]
-        valor_pago = json_data["valor_pago"]
-        data_lancamento  = json_data["data_lancamento"]
-        categoria = json_data["categoria"]
-        
-        data_lancamento = datetime.strptime(data_lancamento, '%Y-%m-%d')
-        valor_pago = Decimal(valor_pago)
+        movimentacao = info.first()
 
-        if Categoria.objects.filter(nome=categoria).exists():
-         
-            mov_att = Movimentacao(id=id, descricao=descricao, valor_pago=valor_pago, data_lancamento=data_lancamento, cod_usuario=usuario,cod_categoria=Categoria.objects.get(nome=categoria), cod_padrao=None)
-            mov_att.save()
+        if "descricao" in validacao.validated_data:
+            movimentacao.descricao = validacao.validated_data["descricao"]
+        if "valor_pago" in validacao.validated_data:
+            movimentacao.valor_pago = validacao.validated_data["valor_pago"]
+        if "data_lancamento" in validacao.validated_data:
+            movimentacao.data_lancamento = validacao.validated_data["data_lancamento"]
+        if "categoria" in validacao.validated_data:
+            movimentacao.categoria = validacao.validated_data["categoria"]
+
+        movimentacao.save()
             
-            return RespostaConteudo(200,model_to_dict(mov_att))
-
-        else:
-            return RespostaStatus(404, "Categoria Inexistente!")
+        return RespostaConteudo(200,model_to_dict(movimentacao))
 
     def delete(self, request, id):
         usuario = request.user
-        id_movimentacao = id
 
-        query = Movimentacao.objects.filter(cod_usuario=usuario,id=id_movimentacao)
-        if query:
+        query = Movimentacao.objects.filter(cod_usuario=usuario,id=id)
+        if query.exists():
             query.delete()
-            return RespostaStatus(200,"Movimentacao Deletada")             
+            return RespostaStatus(200,"Movimentação deletada.")             
         else:    
-            return RespostaStatus(400,"Erro! Esse id não existe")         
+            return RespostaStatus(400,"Erro! Essa movimentação não existe.")         
 
 
 # Saldo

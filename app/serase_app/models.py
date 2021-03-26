@@ -2,7 +2,7 @@ from django.db import models
 from django.contrib.auth.models import User
 from django.db.models.signals import pre_delete
 
-from datetime import datetime
+from datetime import datetime, date
 from decimal import Decimal
 
 # Create your models here.
@@ -29,7 +29,7 @@ class PadraoMovimentacao(models.Model):
     periodo = models.CharField(max_length=7, choices=PERIODO_COBRANCA)
     valor = models.DecimalField(max_digits=6, decimal_places=2, null=True, blank=True)
     dia_cobranca = models.IntegerField() # mes=> dia util, semana=> dia da semana, ano=> mes
-    data_geracao = models.DateField(default=datetime.now, blank=True)
+    data_geracao = models.DateField(default=date.today, blank=True)
     data_fim = models.DateField(null=True, blank=True)
     cod_usuario = models.ForeignKey(User, on_delete=models.CASCADE)
     cod_categoria = models.ForeignKey(Categoria, on_delete=models.CASCADE)
@@ -117,15 +117,15 @@ pre_delete.connect(Movimentacao.pre_delete, sender=Movimentacao)
 
 class Divida(models.Model):
 
-    TIPOS_DE_JUROS=(("composto","composto"),("simples","simples"))
+    TIPOS_DE_JUROS=(("composto","composto"),("simples","simples"), ("não ativo", "não ativo"))
 
-    credor = models.CharField(max_length=40, null=True, blank=True)
-    valor_pago= models.DecimalField(max_digits=9, decimal_places=2, null=True, blank=True)
-    valor_divida= models.DecimalField(max_digits=9, decimal_places=2, null=True, blank=True)
+    credor = models.CharField(max_length=40)
+    valor_pago= models.DecimalField(max_digits=9, decimal_places=2, default=Decimal('0.00'))
+    valor_divida= models.DecimalField(max_digits=9, decimal_places=2)
     juros= models.DecimalField(max_digits=9, decimal_places=2, null=True, blank=True)
-    juros_tipo=models.CharField(max_length=8, choices=TIPOS_DE_JUROS)
+    juros_tipo=models.CharField(max_length=8, choices=TIPOS_DE_JUROS, default="não ativo")
     juros_ativos= models.BooleanField(default=False)
-    cod_padrao = models.ForeignKey(PadraoMovimentacao, on_delete=models.CASCADE, blank=True, null=True)
+    cod_padrao = models.ForeignKey(PadraoMovimentacao, on_delete=models.CASCADE)
 
 
     def __str__(self):
