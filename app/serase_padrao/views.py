@@ -8,7 +8,8 @@ from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated
 
 # All python and dependences stuff
-from datetime import date
+from dateutil.rrule import *
+from datetime import date, timedelta
 import json
 
 # All in other app stuff
@@ -121,7 +122,6 @@ class PadroesView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
-        VALORES_VALIDOS_TIPO = ["receita", "despesa"]
         usuario = request.user
 
         # Filtragem dos padrões do usuário atual
@@ -149,6 +149,9 @@ class PadroesView(APIView):
 
 
 # Cobrança
+
+def calc_weekday(day):
+    return (day+5)%7
 
 def gerar_cobranca(padrao, create=False):
     ultima_cobranca = padrao.ultima_cobranca
@@ -183,7 +186,7 @@ def gera_cobrancas_pendentes(user, create=True):
         criadas = criadas + gerar_cobranca(padrao, False)
     
     if create:
-        return Movimentacao.objects.bulk_create(cobrancas_criadas) or []
+        return Movimentacao.objects.bulk_create(criadas) or []
     else:
         return criadas
 
@@ -191,8 +194,6 @@ class CobrancaView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
-        VALORES_VALIDOS_TIPO = ["receita", "despesa"]
-        VALORES_VALIDOS_SITUACAO = ["pendente", "paga"]
         usuario = request.user
 
         gera_cobrancas_pendentes(usuario)
@@ -200,30 +201,23 @@ class CobrancaView(APIView):
         # Cobranças são movimentações geradas por padrões
         query = Movimentacao.objects.filter(cod_usuario=usuario, cod_padrao__isnull=False)
 
-        if "situacao" in request.GET:
-            situacao = request.GET["situacao"]
 
-            if tipo not in VALORES_VALIDOS_SITUACAO:
-                return RespostaAtributoInvalido("situacao", tipo, VALORES_VALIDOS_TIPO)
+        validacao = FiltrarCobrancaSerializer(data=request.GET)
+        validacao.is_valid(raise_exception=True)
+        data = validacao.validated_data
+
+        if "situacao" in data:
+            situacao = data["situacao"]
 
             if situacao == "paga":
                 query = query.filter(data_lancamento__isnull=False)
             elif situacao == "pendente":
                 query = query.filter(data_lancamento__isnull=True)
             # elif situacao == "...":
-        
-        if "tipo" in request.GET:
-            tipo = request.GET["tipo"]
-
-            if tipo not in VALORES_VALIDOS_TIPO:
-                return RespostaAtributoInvalido("tipo", tipo, VALORES_VALIDOS_TIPO)
-
-            query = query.filter(cod_padrao__receita_despesa=tipo)
-
-        if "cod_padrao" in request.GET:
-            tipo = request.GET["cod_padrao"]
-            #TO-DO: adicionar if pra checar se padrao existe
-            query = query.filter(cod_padrao=cod_padrao)
+        if "tipo" in data:
+            query = query.filter(cod_padrao__receita_despesa=data["tipo"])
+        if "cod_padrao" in data:
+            query = query.filter(cod_padrao=data["cod_padrao"])
 
         # Converte queryset em uma lista de dicionarios(objetos)
         query = query.annotate(situacao=Case(
@@ -231,6 +225,7 @@ class CobrancaView(APIView):
             When(data_lancamento__isnull=True, then=Value("pendente")),
             output_field=CharField()
         ))
+        query = query.order_by("-data_geracao", "-data_lancamento")
         lista = query.values("id", "descricao", "valor_esperado", "data_geracao", "situacao", "cod_padrao", categoria=F("cod_categoria__nome"))
         lista = list(lista)
 
@@ -240,19 +235,30 @@ class PagarPadraoView(APIView):
     permission_classes = [IsAuthenticated]
 
     def put(self,request,id):
-        user =request.user
-        query = Movimentacao.objects.get(id=id, cod_usuario=user)
-        json_data = json.loads(request.body)
-        if query:
-            valor_pago = json_data["valor_pago"]
-            data_lancamento  = date.today()
-            query.valor_pago= valor_pago
-            query.data_lancamento = data_lancamento
-            query.save()
+        user = request.user
+        query = Movimentacao.objects.filter(id=id, cod_usuario=user)
 
-            return RespostaConteudo(200, model_to_dict(query))
-        else:
-            return RespostaStatus(400,"Erro! Esse id não existe")         
+        if not query.exists():
+            return RespostaStatus(400, "Cobranca inexistente!")
+
+        mov = query.first()
+
+        json_data = json.loads(request.body)
+
+        required_params(json_data, ["valor_pago"])
+        validacao = PagarCobrancaSerializer(data=json_data)
+        validacao.is_valid(raise_exception=True)
+        data = validacao.validated_data
+        
+
+        mov.valor_pago = data["valor_pago"]
+        mov.data_lancamento = date.today()
+        mov.save()
+
+        dic = model_to_dict(mov, ["id", "cod_padrao","valor_esperado","valor_pago","data_geracao","data_lancamento","descricao"])
+        dic["categoria"] = mov.cod_categoria.nome
+
+        return RespostaConteudo(200, dic)      
 
 
 

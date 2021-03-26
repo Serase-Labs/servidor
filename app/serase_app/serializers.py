@@ -96,3 +96,29 @@ class FiltrarPadraoMovimentacaoSerializer(serializers.Serializer):
         if not Categoria.objects.filter(nome=value).exists():
              raise serializers.ValidationError("Categoria inexistente!")
         return Categoria.objects.get(nome=value)
+
+
+class FiltrarCobrancaSerializer(serializers.Serializer):
+    tipo = serializers.CharField(max_length=7, required=False)
+    situacao = serializers.CharField(max_length=8, required=False)
+    cod_padrao = serializers.IntegerField(required=False)
+
+    def validate_tipo(self, value):
+        TIPO_MOVIMENTACAO = ["receita","despesa"]
+        if value not in TIPO_MOVIMENTACAO:
+            raise serializers.ValidationError("Tipo não aceita o valor '"+value+"'. Os valores aceitos são: "+", ".join(TIPO_MOVIMENTACAO))
+        return value
+
+    def validate_situacao(self, value):
+        TIPO_MOVIMENTACAO = ["pendente","paga"]
+        if value not in TIPO_MOVIMENTACAO:
+            raise serializers.ValidationError("Tipo não aceita o valor '"+value+"'. Os valores aceitos são: "+", ".join(TIPO_MOVIMENTACAO))
+        return value
+    
+    def validate_cod_padrao(self, value):
+        if not PadraoMovimentacao.objects.filter(id=value).exists():
+             raise serializers.ValidationError("Padrão inexistente!")
+        return PadraoMovimentacao.objects.get(id=value)
+
+class PagarCobrancaSerializer(serializers.Serializer):
+    valor_pago = serializers.DecimalField(max_digits=10, decimal_places=2, required=False)
