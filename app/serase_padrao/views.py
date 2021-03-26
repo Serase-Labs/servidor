@@ -14,7 +14,8 @@ import json
 # All in other app stuff
 from serase_app.models import *
 from serase_app.padroes_resposta import *
-
+from serase_app.utils import *
+from serase_app.serializers import *
 
 
 # Padrão
@@ -26,90 +27,95 @@ class InserirPadraoView(APIView):
         usuario = request.user
         json_data = json.loads(request.body)
 
-        tipo= json_data["tipo"]
-        descricao = json_data["descricao"]
-        periodo = json_data["periodo"]
-        valor =json_data["valor"]
-        dia_cobranca = json_data["dia_cobranca"]
-       # data_geracao  = json_data["data_geracao"]
-        data_fim= json_data["data_fim"]
-        categoria= json_data["categoria"]
+        required_params(json_data, ["tipo", "descricao", "periodo", "dia_cobranca", "categoria"])
+        validacao = ParametroPadraoMovimentacaoSerializer(data=json_data)
+        validacao.is_valid(raise_exception=True)
 
-        if Categoria.objects.filter(nome=categoria).exists():
-            label = PadraoMovimentacao.objects.create(receita_despesa=tipo,descricao=descricao,periodo=periodo, valor=valor, dia_cobranca=dia_cobranca,data_fim=data_fim, cod_usuario=usuario,cod_categoria=Categoria.objects.get(nome=categoria))
-            return RespostaConteudo(200, model_to_dict(label))
-        else:
-            return RespostaStatus(400, "Categoria Inexistente!")
+
+        tipo = validacao.validated_data["tipo"]
+        descricao = validacao.validated_data["descricao"]
+        periodo = validacao.validated_data["periodo"]
+        dia_cobranca = validacao.validated_data["dia_cobranca"]
+        categoria = validacao.validated_data["categoria"]
+
+        padrao = PadraoMovimentacao(receita_despesa=tipo,descricao=descricao,periodo=periodo, dia_cobranca=dia_cobranca, cod_usuario=usuario,cod_categoria=categoria)
+
+        if "valor" in validacao.validated_data:
+            padrao.valor = validacao.validated_data["valor"]
+
+        if "data_fim" in validacao.validated_data:
+            padrao.data_fim = validacao.validated_data["data_fim"]
+
+        padrao.save()
+
+        dic = model_to_dict(padrao, fields=["id", "descricao", "periodo", "dia_cobranca", "data_geracao", "data_fim", "valor"])
+        dic["categoria"] = categoria.nome
+        dic["tipo"] = tipo
+
+        return RespostaConteudo(200, dic)
 
 class PadraoView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request, id):
-
-        #Pegando o nome do usuário 
         usuario = request.user
-        
         query = PadraoMovimentacao.objects.filter(cod_usuario=usuario,id=id)
-        if query:
-            lista = query.values("id", "descricao", "periodo", "dia_cobranca", "data_geracao", "data_fim", valor_padrao=F("valor"), categoria=F("cod_categoria__nome"), tipo=F("receita_despesa"))
+
+        if query.exists():
+            lista = query.values("id", "descricao", "periodo", "dia_cobranca", "data_geracao", "data_fim", "valor", categoria=F("cod_categoria__nome"), tipo=F("receita_despesa"))
             lista = list(lista)
             return RespostaConteudo(200,lista[0])             
         else:    
-            return RespostaStatus(400,"Erro! esse id não está cadastrado")
+            return RespostaStatus(400,"Padrão inexistente!")
      
     def put(self,request,id):
         usuario = request.user
         json_data = json.loads(request.body)
-        query = PadraoMovimentacao.objects.get(id=id,cod_usuario=usuario)
+
+        query = PadraoMovimentacao.objects.filter(id=id,cod_usuario=usuario)
+
+        if not query.exists():
+            return RespostaStatus(400, "Padrão inexistente!")
+
+        validacao = ParametroPadraoMovimentacaoSerializer(data=json_data)
+        validacao.is_valid(raise_exception=True)
+        data = validacao.validated_data
+
+        padrao = query.first()
         
-        if "tipo" in json_data:
-            tipo=json_data["tipo"]
-            query.receita_despesa=tipo
-            query.save()
-        if "periodo" in json_data:
-            periodo = json_data["periodo"]
-            query.periodo=periodo
-            query.save()
-        if "descricao" in json_data:
-            descricao = json_data["descricao"]
-            query.descricao =descricao
-            query.save()
-        if "valor" in json_data:
-            valor = json_data["valor"]
-            query.valor =valor
-            query.save()    
-        if "dia_cobranca" in json_data:
-            dia_cobranca = json_data["dia_cobranca"]
-            query.dia_cobranca =dia_cobranca
-            query.save()
-        if "data_geracao" in json_data:
-            data_geracao = json_data["data_geracao"]
-            query.data_geracao =data_geracao
-            query.save()    
-        if "data_fim" in json_data:
-            data_fim = json_data["data_fim"]
-            query.data_fim = data_fim
-            query.save()
-        if "categoria" in json_data:
-            categoria = json_data["categoria"]
-            if Categoria.objects.filter(nome=categoria).exists():
-                cod_categoria=Categoria.objects.get(nome=categoria)
-                query.cod_categoria= cod_categoria
-                query.save()
-            else:
-                return  RespostaStatus(400,"Erro! Categoria não existente") 
-        return RespostaConteudo(200,model_to_dict(query))  
+        if "tipo" in data:
+            padrao.receita_despesa = data["tipo"]
+        if "periodo" in data:
+            padrao.periodo = data["periodo"]
+        if "descricao" in data:
+            padrao.descricao = data["descricao"]
+        if "valor" in data:
+            padrao.valor = data["valor"]   
+        if "dia_cobranca" in data:
+            padrao.dia_cobranca = jdata["dia_cobranca"]
+        if "data_fim" in data:
+            padrao.data_fim = data["data_fim"]            
+        if "categoria" in data:
+            padrao.categoria = data["categoria"]
+
+        padrao.save()
+
+        dic = model_to_dict(padrao, fields=["id", "descricao", "periodo", "dia_cobranca", "data_geracao", "data_fim", "valor"])
+        dic["categoria"] = padrao.cod_categoria.nome
+        dic["tipo"] = padrao.receita_despesa
+        
+        return RespostaConteudo(200,dic)  
     
     def delete(self, request, id):
         usuario = request.user
-        id_padrao = id
 
-        query = PadraoMovimentacao.objects.filter(cod_usuario=usuario,id=id_padrao)
-        if query:
+        query = PadraoMovimentacao.objects.filter(cod_usuario=usuario,id=id)
+
+        if query.exists():
             query.delete()
-            return RespostaStatus(200,"Padrao Deletado")             
+            return RespostaStatus(200,"Padrao deletado.")             
         else:    
-            return RespostaStatus(400,"Erro! Esse id não existe")        
+            return RespostaStatus(400,"Padrão inexistente!")        
     
 class PadroesView(APIView):
     permission_classes = [IsAuthenticated]
@@ -121,18 +127,21 @@ class PadroesView(APIView):
         # Filtragem dos padrões do usuário atual
         query = PadraoMovimentacao.objects.filter(cod_usuario=usuario)
 
-        # Caso especificado o tipo de padrao
-        if "tipo" in request.GET:
-            tipo = request.GET["tipo"]
+        query = query.exclude(receita_despesa="divida")
 
-            if tipo not in VALORES_VALIDOS_TIPO:
-                return RespostaAtributoInvalido("tipo", tipo, VALORES_VALIDOS_TIPO)
+        validacao = FiltrarPadraoMovimentacaoSerializer(data=request.GET)
+        validacao.is_valid(raise_exception=True)
+        data = validacao.validated_data
 
-            query = query.filter(receita_despesa=tipo)
+
+        if "tipo" in data:
+            query = query.filter(receita_despesa=data["tipo"])
+        if "categoria" in data:
+            query = query.filter(cod_categoria=data["categoria"])
 
 
         # Converte queryset em uma lista de dicionarios(objetos)
-        lista = query.values("id", "descricao", "periodo", "dia_cobranca", "data_geracao", "data_fim", valor_padrao=F("valor"), categoria=F("cod_categoria__nome"), tipo=F("receita_despesa"))
+        lista = query.values("id", "descricao", "periodo", "dia_cobranca", "data_geracao", "data_fim", "valor", categoria=F("cod_categoria__nome"), tipo=F("receita_despesa"))
         lista = list(lista)
 
         return RespostaLista(200, lista)

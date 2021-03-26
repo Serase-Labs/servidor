@@ -81,15 +81,17 @@ class InsereMovimentacaoView(APIView):
 
         required_params(json_data, ["descricao", "valor_pago", "data_lancamento", "categoria"])
         validacao = ParametroMovimentacaoSerializer(data=json_data)
+        validacao.is_valid(raise_exception=True)
 
         descricao = validacao.validated_data["descricao"]
         valor_pago = validacao.validated_data["valor_pago"]
         data_lancamento = validacao.validated_data["data_lancamento"]
         categoria = validacao.validated_data["categoria"]
 
-        if validacao.is_valid(raise_exception=True):
-            label = Movimentacao(descricao=descricao, valor_pago=valor_pago, data_lancamento=data_lancamento, cod_usuario=usuario,cod_categoria=Categoria.objects.get(nome=categoria), cod_padrao=None)
-            return RespostaConteudo(200, model_to_dict(label))
+        mov = Movimentacao(descricao=descricao, valor_pago=valor_pago, data_lancamento=data_lancamento, cod_usuario=usuario,cod_categoria=Categoria.objects.get(nome=categoria), cod_padrao=None)
+        mov.save()
+        return RespostaConteudo(200, model_to_dict(mov))
+            
 
 class MovimentacaoView(APIView):
     permission_classes = [IsAuthenticated]
