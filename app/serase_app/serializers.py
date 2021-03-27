@@ -1,4 +1,3 @@
-from django.contrib.auth.models import User
 from rest_framework import serializers
 from .models import *
 
@@ -21,11 +20,6 @@ class MovimentacaoSerializer(serializers.ModelSerializer):
 class SaldoSerializer(serializers.ModelSerializer):
     class Meta:
         model = Saldo
-        fields = '__all__'
-
-class UserSerializer (serializers.ModelSerializer):
-    class Meta:
-        model = User
         fields = '__all__'
 
 class DividaSerializer (serializers.ModelSerializer):
@@ -168,3 +162,13 @@ class FiltrarDividaSerializer(serializers.Serializer):
         if not Categoria.objects.filter(nome=value).exists():
              raise serializers.ValidationError("Categoria inexistente!")
         return Categoria.objects.get(nome=value)
+
+
+class UserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ('email', 'password')
+
+class ParametroUserSerializer(serializers.Serializer):
+    email = serializers.EmailField(required=False)
+    senha = serializers.CharField(max_length=128, write_only=True)

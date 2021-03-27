@@ -1,6 +1,3 @@
-# All Django Stuff
-from django.contrib.auth.models import User
-
 # All rest framework stuff
 from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated

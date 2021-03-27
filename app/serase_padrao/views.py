@@ -1,6 +1,5 @@
 # All Django Stuff
 from django.db.models import F, Case, When, CharField, Value
-from django.contrib.auth.models import User
 from django.forms.models import model_to_dict
 
 # All rest framework stuff

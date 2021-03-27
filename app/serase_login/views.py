@@ -1,5 +1,4 @@
 # All Django Stuff
-from django.contrib.auth.models import User
 from django.contrib.auth import login, logout, authenticate
 
 # All rest framework stuff
@@ -13,7 +12,9 @@ import json
 # All in other app stuff
 from serase_app.models import *
 from serase_app.padroes_resposta import *
-
+from serase_app.utils import *
+from serase_app.serializers import *
+from serase_movimentacao.utils import calcular_saldo
 
 
 # Views relacionadas ao Login
@@ -22,31 +23,21 @@ class CadastrarUsuarioView(APIView):
 
     def post (self,request):
         json_data = json.loads(request.body)
-        nome = json_data['nome']
-        email=json_data['email']
-        senha = json_data['senha'] 
-        aux_usuario=User.objects.filter(email=email)
 
-        if aux_usuario:
-            return RespostaStatus(400,"Erro! Usario já cadastrado")
+        required_params(json_data, ["email", "senha"])
+        validacao = UserSerializer(data={"email": json_data['email'], "password":json_data['senha'] })
+        validacao.is_valid(raise_exception=True)
+        data = validacao.validated_data
 
-    
-        novo_usuario = User.objects.create_user(username=nome,email=email,password=senha)
-        novo_usuario.save()
-        Token.objects.create(user=novo_usuario)
+        usuario = User.objects.create_user(email=data["email"],password=data["password"])
+        usuario.save()
+        token = Token.objects.create(user=usuario)
 
-        return RespostaStatus(200, "Requisição feita com sucesso!")        
-
-class UsuarioLogadoView(APIView):
-    permission_classes = [IsAuthenticated]
-
-    def get(self,request):
-        username = None
-        if request.user.is_authenticated:
-            username = request.user.get_username()
-            return RespostaStatus(200, username)  
-        else:
-            return RespostaStatus(400, "Senha ou usuario invalidos ")
+        return RespostaConteudo(200, {
+            "nome": usuario.get_full_name(),
+            "email": usuario.email,
+            "token": "Token "+str(token),
+        })      
 
 class InformacoesUsuarioView(APIView):
     permission_classes = [IsAuthenticated]
@@ -65,15 +56,14 @@ class LoginView(APIView):
 
     def post(self,request):
         json_data = json.loads(request.body)
-        email=json_data['email']
-        senha = json_data['senha']
-        usuario= User.objects.get(email=email)
-        nome = usuario.get_username()
-        user = authenticate(request, username=nome, password=senha)
-        
-        
-        if user is not None:
-            login(request, user)
+
+        required_params(json_data, ["email", "senha"])
+        validacao = ParametroUserSerializer(data=json_data)
+        validacao.is_valid(raise_exception=True)
+
+        usuario = authenticate(request, email=json_data["email"], password=json_data["senha"])
+
+        if usuario is not None:
             token = Token.objects.get(user=usuario)
 
             return RespostaConteudo(200, {
@@ -82,7 +72,7 @@ class LoginView(APIView):
                 "token": "Token "+str(token),
             })
         else:
-            return RespostaStatus(400, "Senha ou usuario invalidos!")    
+            return RespostaStatus(400, "Email ou senha invalidos!")    
 
 class LogoutView(APIView):
              
