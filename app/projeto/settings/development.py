@@ -48,6 +48,7 @@ INSTALLED_APPS = [
 
 CORS_ALLOW_ALL_ORIGINS = True
 CORS_ALLOW_CREDENTIALS = True # Permitir cookies futuramente (caso não seja utilizado, remover)
+AUTH_USER_MODEL = 'serase_app.User'
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
