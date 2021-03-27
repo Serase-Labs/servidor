@@ -65,7 +65,7 @@ class PadraoView(APIView):
         if query.exists():
             lista = query.values("id", "descricao", "periodo", "dia_cobranca", "data_geracao", "data_fim", "valor", categoria=F("cod_categoria__nome"), tipo=F("receita_despesa"))
             lista = list(lista)
-            return RespostaConteudo(200,lista[0])             
+            return RespostaConteudo(200, lista[0])        
         else:    
             return RespostaStatus(400,"Padrão inexistente!")
      
@@ -275,7 +275,6 @@ def exibir_divida(divida):
     dic_padrao["categoria"] = divida.cod_padrao.cod_categoria.nome
     dic = merge_two_dicts(dic_divida, dic_padrao)
     return dic
-
 
 class InserirDividaView(APIView):
     permission_classes = [IsAuthenticated]

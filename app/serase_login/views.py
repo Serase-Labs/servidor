@@ -21,7 +21,6 @@ from serase_app.padroes_resposta import *
 class CadastrarUsuarioView(APIView):
 
     def post (self,request):
-        
         json_data = json.loads(request.body)
         nome = json_data['nome']
         email=json_data['email']
@@ -89,4 +88,4 @@ class LogoutView(APIView):
              
     def get(self,request):
         logout(request)
-        return RespostaStatus(200, "Requisição feita com sucesso!")
+        return RespostaStatus(200, "Logout realizado com sucesso!")

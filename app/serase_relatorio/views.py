@@ -14,7 +14,7 @@ from serase_app.padroes_resposta import *
 
 
 
-# Analises / Componentes
+# Analises
 
 class ResumoAnaliseView(APIView):
     permission_classes = [IsAuthenticated]
@@ -40,14 +40,8 @@ class CategoriaAnaliseView(APIView):
 
         return RespostaConteudo(200, resposta)
 
-class GraficoSemanalView(APIView):
-    permission_classes = [IsAuthenticated]
 
-    def get(self, request):
-        usuario = request.user
-        resposta = grafico_semanal(usuario)
-
-        return RespostaLista(200, resposta)
+# Gráficos Gerais
 
 class GraficoCategoriaView(APIView):
     permission_classes = [IsAuthenticated]
@@ -70,6 +64,18 @@ class GraficoPadraoDespesaView(APIView):
 
         usuario = request.user
         resposta = grafico_padrao_despesa(usuario, periodo)
+
+        return RespostaLista(200, resposta)
+
+
+# Gráficos Exclusivos
+
+class GraficoSemanalView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        usuario = request.user
+        resposta = grafico_semanal(usuario)
 
         return RespostaLista(200, resposta)
 

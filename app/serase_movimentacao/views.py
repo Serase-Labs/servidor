@@ -92,7 +92,6 @@ class InsereMovimentacaoView(APIView):
         mov.save()
         return RespostaConteudo(200, model_to_dict(mov))
             
-
 class MovimentacaoView(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -180,7 +179,6 @@ class SaldoView(APIView):
         })
 
 
-
 # Categoria
 
 class CategoriaView(APIView):
@@ -192,7 +190,6 @@ class CategoriaView(APIView):
         lista = list(lista)
 
         return RespostaLista(200, lista)
-
 
 
 # Misc
@@ -209,4 +206,3 @@ class StatusServidorView(APIView):
                 print(something, json_data[something])
 
         return RespostaStatus(200, "Requisição POST feita com sucesso!")
-
