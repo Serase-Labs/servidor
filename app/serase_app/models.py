@@ -121,11 +121,12 @@ class Movimentacao(models.Model):
                 saldo.saldo += self.valor_pago - old.valor_pago
                 saldo.save()
         else:
-            mes_ano = datetime.strptime(self.data_lancamento, '%Y-%m-%d')
-            mes_ano = mes_ano.replace(day=1)
-            saldo, c = Saldo.objects.get_or_create(cod_usuario=self.cod_usuario, mes_ano=mes_ano)
-            saldo.saldo+=Decimal(self.valor_pago)
-            saldo.save()
+            if self.data_lancamento:
+                mes_ano = self.data_lancamento
+                mes_ano = mes_ano.replace(day=1)
+                saldo, c = Saldo.objects.get_or_create(cod_usuario=self.cod_usuario, mes_ano=mes_ano)
+                saldo.saldo+=Decimal(self.valor_pago)
+                saldo.save()
 
         super(Movimentacao,self).save(*args,**kwargs)
     
