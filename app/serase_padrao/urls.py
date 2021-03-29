@@ -10,4 +10,5 @@ urlpatterns = [
     path('divida/<int:id>/',DividaView.as_view(),name="divida"),
     path('cobrancas/', CobrancaView.as_view(), name='cobranca'),
     path('pagamento/<int:id>/',PagarPadraoView.as_view(),name='pagarpadrao'),
+    path('pagamento/',PagamentoExtraView.as_view(),name='pagarextra'),
 ]

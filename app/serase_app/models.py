@@ -92,15 +92,15 @@ class Movimentacao(models.Model):
         """
 
         # Modificando o Saldo automaticamente apartir de uma movimentação
-
         old = Movimentacao.objects.filter(pk=getattr(self,"pk",None)).first()
 
         # Se havia informações prévias sobre a movimentação (ou seja, se for uma alteração)
         if old:
             # Se houve alteração na data da movimentação
-            if old.data_lancamento!=self.data_lancamento:
-                new_date = datetime(year=self.data_lancamento.year, month=self.data_lancamento.month, day=1)
-                saldo_old = Saldo.objects.get(cod_usuario=self.cod_usuario,mes_ano__month=old.data_lancamento.month, mes_ano__year=old.data_lancamento.year)
+            if old.data_lancamento!=self.data_lancamento and old.data_lancamento:
+                new_date = self.data_lancamento.replace(day=1)
+                old_date = old.data_lancamento.replace(day=1)
+                saldo_old, d = Saldo.objects.get_or_create(cod_usuario=self.cod_usuario,mes_ano=old_date)
                 saldo_new, c = Saldo.objects.get_or_create(cod_usuario=self.cod_usuario,mes_ano=new_date)
                 
                 # Se os meses do saldo não são o mesmo na alteração de movimentação
@@ -113,12 +113,12 @@ class Movimentacao(models.Model):
                     # Subtrai diferença com saldo anterior
                     saldo_new.saldo += self.valor_pago - old.valor_pago
                     saldo_new.save()
-
             # Houve alteração no valor e não na data
             elif old.valor_pago!=self.valor_pago:
                 # Subtrai diferença com saldo anterior
-                saldo = Saldo.objects.get(cod_usuario=self.cod_usuario,mes_ano__month=self.data_lancamento.month, mes_ano__year=self.data_lancamento.year)
-                saldo.saldo += self.valor_pago - old.valor_pago
+                mes_ano = self.data_lancamento.replace(day=1)
+                saldo, c = Saldo.objects.get_or_create(cod_usuario=self.cod_usuario,mes_ano=mes_ano)
+                saldo.saldo += self.valor_pago - (old.valor_pago or 0)
                 saldo.save()
         else:
             if self.data_lancamento:

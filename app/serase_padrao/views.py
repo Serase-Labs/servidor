@@ -235,10 +235,12 @@ class PagarPadraoView(APIView):
 
     def put(self,request,id):
         user = request.user
-        query = Movimentacao.objects.filter(id=id, cod_usuario=user)
+        query = Movimentacao.objects.filter(id=id, cod_usuario=user, data_geracao__isnull=False)
 
         if not query.exists():
             return RespostaStatus(400, "Cobranca inexistente!")
+        elif not query.filter(data_lancamento__isnull=True).exists():
+            return RespostaStatus(400, "Cobranca já foi paga!")
 
         mov = query.first()
 
@@ -259,6 +261,28 @@ class PagarPadraoView(APIView):
 
         return RespostaConteudo(200, dic)      
 
+class PagamentoExtraView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        user = request.user
+        
+        json_data = json.loads(request.body)
+        required_params(json_data, ["cod_padrao","valor_pago"])
+        validacao = PagarSemCobrancaSerializer(data=json_data)
+        validacao.is_valid(raise_exception=True)
+        data = validacao.validated_data
+
+        padrao = data["cod_padrao"]
+
+        mov = Movimentacao(valor_pago=data["valor_pago"] , cod_padrao=padrao, descricao=padrao.descricao, cod_categoria=padrao.cod_categoria, cod_usuario=user)
+        mov.data_lancamento = data["data_lancamento"] if "data_lancamento" in data else date.today()
+        mov.save()
+
+        dic = model_to_dict(mov, ["id", "cod_padrao","valor_esperado","valor_pago","data_geracao","data_lancamento","descricao"])
+        dic["categoria"] = mov.cod_categoria.nome
+
+        return RespostaConteudo(200, dic)  
 
 
 # Divida
