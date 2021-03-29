@@ -174,9 +174,11 @@ class FiltrarDividaSerializer(serializers.Serializer):
 
 
 class UserSerializer(serializers.ModelSerializer):
+    nome = serializers.CharField(max_length=150, required=False)
+
     class Meta:
         model = User
-        fields = ('email', 'password')
+        fields = ('email', 'password', 'nome')
 
 class ParametroUserSerializer(serializers.Serializer):
     email = serializers.EmailField(required=False)
