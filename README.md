@@ -6,12 +6,22 @@ Esse repositório abriga os códigos e documentação do servidor da aplicação
 
 Saiba como rodar o servidor no arquivo [como_rodar.md](./docs/como_rodar.md)!
 
-**Trabalhando na versão:** ❓ `xxxxxxx`
+**Versão atual:** 👝 `bitcoin`
 ---
+
+**Nome da versão:** `bitcoin`
+**Data de lançamento:** `29/03/2021`
 
 Esta versão inclui:
 - Views separadas em apps diferentes com o propósito de melhorar a organização de código
 - Deleção de códigos desnecessários
+- Organização de pastas
+- Usuário não necessita de username
+- Nome do usuário armazenado no campo certo
+- Validação de campos nas requisições
+- Informações detalhadas de campos em resposta de erro
+- Inclusão de pagamento extra a um padrão
+- Correção de erros nos códigos anteriores
 
 
 **Versão Anterior:** 👛 `pre-bitcoin`
