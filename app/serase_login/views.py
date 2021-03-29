@@ -24,12 +24,12 @@ class CadastrarUsuarioView(APIView):
     def post (self,request):
         json_data = json.loads(request.body)
 
-        required_params(json_data, ["email", "senha"])
-        validacao = UserSerializer(data={"email": json_data['email'], "password":json_data['senha'] })
+        required_params(json_data, ["email", "senha", "nome"])
+        validacao = UserSerializer(data={"email": json_data['email'], "password":json_data['senha'], "nome":json_data["nome"]})
         validacao.is_valid(raise_exception=True)
         data = validacao.validated_data
 
-        usuario = User.objects.create_user(email=data["email"],password=data["password"])
+        usuario = User.objects.create_user(email=data["email"],password=data["password"], first_name=data["nome"])
         usuario.save()
         token = Token.objects.create(user=usuario)
 
