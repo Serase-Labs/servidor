@@ -268,12 +268,13 @@ class PagamentoExtraView(APIView):
         user = request.user
         
         json_data = json.loads(request.body)
-        required_params(json_data, ["cod_padrao","valor_pago"])
+        required_params(json_data, ["cod_divida","valor_pago"])
         validacao = PagarSemCobrancaSerializer(data=json_data)
         validacao.is_valid(raise_exception=True)
         data = validacao.validated_data
 
-        padrao = data["cod_padrao"]
+        divida = data["cod_divida"]
+        padrao = divida.cod_padrao
 
         mov = Movimentacao(valor_pago=data["valor_pago"] , cod_padrao=padrao, descricao=padrao.descricao, cod_categoria=padrao.cod_categoria, cod_usuario=user)
         mov.data_lancamento = data["data_lancamento"] if "data_lancamento" in data else date.today()
