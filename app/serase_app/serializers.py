@@ -124,12 +124,12 @@ class PagarCobrancaSerializer(serializers.Serializer):
 
 class PagarSemCobrancaSerializer(serializers.Serializer):
     valor_pago = serializers.DecimalField(max_digits=10, decimal_places=2, required=False)
-    cod_padrao = serializers.IntegerField(required=False)
+    cod_divida = serializers.IntegerField(required=False)
 
-    def validate_cod_padrao(self, value):
-        if not PadraoMovimentacao.objects.filter(id=value).exists():
-             raise serializers.ValidationError("Padrão inexistente!")
-        return PadraoMovimentacao.objects.get(id=value)
+    def validate_cod_divida(self, value):
+        if not Divida.objects.filter(id=value).exists():
+             raise serializers.ValidationError("Divida inexistente!")
+        return Divida.objects.get(id=value)
 
 
 
@@ -153,7 +153,7 @@ class ParametroDividaSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Divida
-        fields = '__all__'
+        exclude = ['cod_padrao']
 
 class FiltrarDividaSerializer(serializers.Serializer):
     categoria = serializers.CharField(max_length=20, required=False)
