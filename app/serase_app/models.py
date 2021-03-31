@@ -1,6 +1,5 @@
 from django.db import models
 from django.contrib.auth.models import BaseUserManager, AbstractUser
-from django.db.models.signals import pre_delete
 
 from datetime import datetime, date
 from decimal import Decimal
@@ -75,6 +74,7 @@ class PadraoMovimentacao(models.Model):
     def __str__(self):
         return self.descricao 
 
+
 class Movimentacao(models.Model):
     descricao = models.CharField(max_length=40, null=True, blank=True)
     valor_esperado = models.DecimalField(max_digits=6, decimal_places=2, null=True, blank=True)
@@ -85,69 +85,8 @@ class Movimentacao(models.Model):
     cod_categoria = models.ForeignKey(Categoria, on_delete=models.CASCADE)
     cod_padrao = models.ForeignKey(PadraoMovimentacao, on_delete=models.CASCADE, blank=True, null=True)
 
-    def save(self,*args,**kwargs):
-        """
-        Chamada no ato de salvar uma instancia no BD.
-        Compara valores anteriores de valor e data e altera o saldo.
-        """
-
-        # Modificando o Saldo automaticamente apartir de uma movimentação
-        old = Movimentacao.objects.filter(pk=getattr(self,"pk",None)).first()
-
-        # Se havia informações prévias sobre a movimentação (ou seja, se for uma alteração)
-        if old:
-            # Se houve alteração na data da movimentação
-            if old.data_lancamento!=self.data_lancamento and old.data_lancamento:
-                new_date = self.data_lancamento.replace(day=1)
-                old_date = old.data_lancamento.replace(day=1)
-                saldo_old, d = Saldo.objects.get_or_create(cod_usuario=self.cod_usuario,mes_ano=old_date)
-                saldo_new, c = Saldo.objects.get_or_create(cod_usuario=self.cod_usuario,mes_ano=new_date)
-                
-                # Se os meses do saldo não são o mesmo na alteração de movimentação
-                if saldo_old.mes_ano != saldo_new.mes_ano:
-                    # Remove saldo do mês da data anterior e adiciona no mês da nova data
-                    saldo_old.saldo -= old.valor_pago
-                    saldo_new.saldo += self.valor_pago
-                    Saldo.objects.bulk_update([saldo_old, saldo_new], ["saldo"])
-                else:
-                    # Subtrai diferença com saldo anterior
-                    saldo_new.saldo += self.valor_pago - old.valor_pago
-                    saldo_new.save()
-            # Houve alteração no valor e não na data
-            elif old.valor_pago!=self.valor_pago:
-                # Subtrai diferença com saldo anterior
-                mes_ano = self.data_lancamento.replace(day=1)
-                saldo, c = Saldo.objects.get_or_create(cod_usuario=self.cod_usuario,mes_ano=mes_ano)
-                saldo.saldo += self.valor_pago - (old.valor_pago or 0)
-                saldo.save()
-        else:
-            if self.data_lancamento:
-                mes_ano = self.data_lancamento
-                mes_ano = mes_ano.replace(day=1)
-                saldo, c = Saldo.objects.get_or_create(cod_usuario=self.cod_usuario, mes_ano=mes_ano)
-                saldo.saldo+=Decimal(self.valor_pago)
-                saldo.save()
-
-        super(Movimentacao,self).save(*args,**kwargs)
-    
-    @staticmethod
-    def pre_delete(sender, **kwargs):
-        """ 
-        Chamada antes de uma movimentação ser deletada.
-        Subtrai seu valor no objeto saldo.
-        """
-        
-        instance = kwargs.get('instance')
-        if instance.data_lancamento != None:
-            epoca = instance.data_lancamento
-            saldo = Saldo.objects.get(cod_usuario=instance.cod_usuario,mes_ano__month=epoca.month, mes_ano__year=epoca.year)
-            saldo.saldo -= instance.valor_pago
-            saldo.save()
-
     def __str__(self):
         return self.descricao
-
-pre_delete.connect(Movimentacao.pre_delete, sender=Movimentacao)
 
 class Divida(models.Model):
 
