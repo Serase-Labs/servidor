@@ -157,7 +157,7 @@ class Divida(models.Model):
     valor_pago= models.DecimalField(max_digits=9, decimal_places=2, default=Decimal('0.00'))
     valor_divida= models.DecimalField(max_digits=9, decimal_places=2)
     juros= models.DecimalField(max_digits=9, decimal_places=2, null=True, blank=True)
-    juros_tipo=models.CharField(max_length=8, choices=TIPOS_DE_JUROS, default="não ativo")
+    juros_tipo=models.CharField(max_length=9, choices=TIPOS_DE_JUROS, default="não ativo")
     juros_ativos= models.BooleanField(default=False)
     cod_padrao = models.ForeignKey(PadraoMovimentacao, on_delete=models.CASCADE)
 
