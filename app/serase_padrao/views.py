@@ -228,7 +228,7 @@ class CobrancaView(APIView):
             output_field=CharField()
         ))
         query = query.order_by("-data_geracao", "-data_lancamento")
-        lista = query.values("id", "descricao", "valor_esperado", "data_geracao", "situacao", "cod_padrao", categoria=F("cod_categoria__nome"))
+        lista = query.values("id", "descricao", "valor_esperado", "valor_pago", "data_geracao", "data_lancamento", "situacao", "cod_padrao", categoria=F("cod_categoria__nome"))
         lista = list(lista)
 
         return RespostaLista(200, lista)
