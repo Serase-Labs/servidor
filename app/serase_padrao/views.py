@@ -217,6 +217,9 @@ class CobrancaView(APIView):
             query = query.filter(cod_padrao__receita_despesa=data["tipo"])
         if "cod_padrao" in data:
             query = query.filter(cod_padrao=data["cod_padrao"])
+        if "cod_divida" in data:
+            divida = data["cod_divida"]
+            query = query.filter(cod_padrao=divida.cod_padrao)
 
         # Converte queryset em uma lista de dicionarios(objetos)
         query = query.annotate(situacao=Case(
